@@ -13,6 +13,7 @@ import com.example.phonecinemaapp.ui.theme.*
 import com.example.phonecinemaapp.navigation.AppNavigation // <-- Importa tu navegación
 
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

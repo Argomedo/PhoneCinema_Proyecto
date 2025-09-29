@@ -1,5 +1,6 @@
-package com.example.phonecinemaapp.ui.login // Paquete corregido
+package com.example.phonecinemaapp.ui.login
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -12,10 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
+
+// -----------------------------------------------------------------------------------
+// PARTE 1: COMPOSABLE CON ESTADO (STATEFUL) - Gestiona la lógica y el ViewModel
+// -----------------------------------------------------------------------------------
 
 @Composable
 fun LoginScreen(
@@ -33,6 +40,33 @@ fun LoginScreen(
         }
     }
 
+    // Llama al Composable sin estado, pasándole el estado actual y las acciones
+    LoginScreenContent(
+        emailState = uiState.email,
+        passwordState = uiState.contrasena,
+        onEmailChange = { email -> loginViewModel.onLoginChange(email, uiState.contrasena) },
+        onPasswordChange = { pass -> loginViewModel.onLoginChange(uiState.email, pass) },
+        onLoginClick = { loginViewModel.iniciarSesion() },
+        onRegisterClick = onNavigateToRegistro,
+        onForgotPasswordClick = { /* TODO: Implementar lógica de contraseña olvidada */ }
+    )
+}
+
+
+// -----------------------------------------------------------------------------------
+// PARTE 2: COMPOSABLE SIN ESTADO (STATELESS) - Solo dibuja la UI, es fácil de previsualizar
+// -----------------------------------------------------------------------------------
+
+@Composable
+fun LoginScreenContent(
+    emailState: String,
+    passwordState: String,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,8 +82,8 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(40.dp))
 
         OutlinedTextField(
-            value = uiState.email,
-            onValueChange = { loginViewModel.onLoginChange(it, uiState.contrasena) },
+            value = emailState,
+            onValueChange = onEmailChange,
             label = { Text("Usuario o Correo") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -63,8 +97,8 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = uiState.contrasena,
-            onValueChange = { loginViewModel.onLoginChange(uiState.email, it) },
+            value = passwordState,
+            onValueChange = onPasswordChange,
             label = { Text("Contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
@@ -81,14 +115,14 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(onClick = { /* TODO */ }) {
+            TextButton(onClick = onForgotPasswordClick) {
                 Text("¿Olvidaste tu Contraseña?", color = Color.White, fontSize = 12.sp)
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { loginViewModel.iniciarSesion() },
+            onClick = onLoginClick,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
@@ -101,9 +135,72 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        TextButton(onClick = onNavigateToRegistro) {
+        TextButton(onClick = onRegisterClick) {
             Text("¿No tienes una cuenta? Regístrate aquí", color = Color.White)
         }
         Spacer(modifier = Modifier.height(80.dp))
     }
+}
+
+
+// -----------------------------------------------------------------------------------
+// PARTE 3: PREVISUALIZACIONES - Para ver tu UI sin ejecutar la app
+// -----------------------------------------------------------------------------------
+
+@Preview(
+    name = "Login Screen - Modo Oscuro",
+    showBackground = true,
+    backgroundColor = 0xFF1C1B1F, // Color de fondo oscuro para que se vea bien
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreenContent(
+        emailState = "usuario@ejemplo.com",
+        passwordState = "12345678",
+        onEmailChange = {},
+        onPasswordChange = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onForgotPasswordClick = {}
+    )
+}
+
+@Preview(
+    name = "Login Screen - Campos Vacíos",
+    showBackground = true,
+    backgroundColor = 0xFF1C1B1F,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun LoginScreenEmptyPreview() {
+    LoginScreenContent(
+        emailState = "",
+        passwordState = "",
+        onEmailChange = {},
+        onPasswordChange = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onForgotPasswordClick = {}
+    )
+}
+
+@Preview(
+    name = "Login Screen - En Dispositivo Pequeño",
+    showBackground = true,
+    backgroundColor = 0xFF1C1B1F,
+    device = Devices.PIXEL_4A,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun LoginScreenSmallDevicePreview() {
+    LoginScreenContent(
+        emailState = "un.correo.muy.largo.para.probar@ejemplo.com",
+        passwordState = "password123",
+        onEmailChange = {},
+        onPasswordChange = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onForgotPasswordClick = {}
+    )
 }
