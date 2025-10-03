@@ -22,6 +22,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
+import com.example.phonecinemaapp.ui.components.AppTopBar
+
 
 // Ya no necesitamos los modelos de datos ni el ViewModel aquí.
 // Solo importamos lo necesario para la UI.
@@ -37,7 +39,8 @@ fun HomeScreen(
     HomeScreenContent(
         uiState = uiState,
         onLogoutClick = onLogout,
-        onMovieClick = { peliculaId -> onNavigateToMovieDetails(peliculaId) }
+        onMovieClick = { peliculaId -> onNavigateToMovieDetails(peliculaId)
+        }
     )
 }
 
@@ -51,26 +54,11 @@ fun HomeScreenContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            CenterAlignedTopAppBar(
-                // --- MODIFICACIÓN AQUÍ ---
-                modifier = Modifier.shadow(elevation = 100.dp), // Añade una sombra
-
-                title = { Text("Cartelera") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                actions = {
-                    IconButton(onClick = onLogoutClick) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = "Cerrar Sesión"
-                        )
-                    }
-                }
+            AppTopBar(
+                title = "Cartelera", // 🔹 lo mismo que antes
+                onLogoutClick = onLogoutClick
             )
-        },
+        }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier

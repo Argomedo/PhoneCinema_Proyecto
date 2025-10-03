@@ -6,18 +6,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// --- 1. DEFINIMOS LOS MODELOS DE DATOS AQUÍ, EN EL NIVEL SUPERIOR ---
-data class Pelicula(val id: Int, val nombre: String, val posterResId: Int)
-data class Categoria(val nombre: String, val peliculas: List<Pelicula>)
+// --- MODELOS DE DATOS ---
+data class Pelicula(val id: Int,
+                    val nombre: String,
+                    val posterResId: Int,
+                    val descripcion: String = "",
+                    val genero: String = "",
+                    val duracion: String = "",
+                    val año: Int = 0)
+data class Categoria(val nombre: String,
+                     val peliculas: List<Pelicula>)
 
-// --- 2. DEFINIMOS EL ESTADO DE LA UI AQUÍ TAMBIÉN ---
+// --- ESTADO DE LA UI ---
 data class HomeUiState(
     val categorias: List<Categoria> = emptyList(),
     val nombreUsuario: String = "Invitado"
 )
 
-
-// --- 3. Y FINALMENTE, LA CLASE VIEWMODEL ---
+// --- VIEWMODEL ---
 class HomeViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -29,11 +35,30 @@ class HomeViewModel : ViewModel() {
 
     private fun cargarDatosDeEjemplo() {
         val peliculasDeAccion = listOf(
-            Pelicula(1, "Joker", R.drawable.cartelera_joker),
-            Pelicula(2, "Kill Bill", R.drawable.cartelera_killbill)
+            Pelicula(1,
+                "Joker",
+                R.drawable.cartelera_joker,
+                "Un comediante fallido se vuelve loco y se transforma en un criminal psicópata.",
+                "Drama",
+                "2h 2m",
+                2019
+                ),
+            Pelicula(2,
+                "Kill Bill",
+                R.drawable.cartelera_killbill,
+                "Una asesina se despierta de un coma y busca venganza contra su antiguo jefe.",
+                "Accion",
+                "1h 51m",
+                2003)
         )
         val peliculasDeComedia = listOf(
-            Pelicula(3, "Lost in Translation", R.drawable.cartelera_lost)
+            Pelicula(3,
+                "Lost in Translation",
+                R.drawable.cartelera_lost,
+                "Una amistad inusual se forma entre dos americanos en Tokio.",
+                "Comedia/Drama",
+                "1h 42m",
+                2003)
         )
 
         _uiState.value = HomeUiState(

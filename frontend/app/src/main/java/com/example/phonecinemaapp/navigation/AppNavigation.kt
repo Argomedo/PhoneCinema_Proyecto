@@ -1,12 +1,15 @@
 package com.example.phonecinemaapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.phonecinemaapp.ui.home.HomeScreen
 import com.example.phonecinemaapp.ui.login.LoginScreen
 import com.example.phonecinemaapp.ui.registro.RegistroScreen
+import com.example.phonecinemaapp.ui.reseñas.ReviewScreen
 
 @Composable
 fun AppNavigation() {
@@ -59,10 +62,24 @@ fun AppNavigation() {
                     }
                 },
                 onNavigateToMovieDetails = { movieId ->
-                    // Lógica para navegar a la pantalla de detalles de una película.
-                    // Por ahora la dejamos vacía. En el futuro aquí navegarías a
-                    // una nueva pantalla pasándole la 'movieId'.
+                    navController.navigate("${AppScreens.ReviewScreen.route}/$movieId")
                 }
+            )
+        }
+
+        composable(
+            route = "${AppScreens.ReviewScreen.route}/{movieId}",
+            arguments = listOf(
+                navArgument("movieId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+            val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
+
+            ReviewScreen(
+                movieId = movieId,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
@@ -72,5 +89,6 @@ sealed class AppScreens(val route: String) {
     object LoginScreen : AppScreens("login_screen")
     object RegistroScreen : AppScreens("registro_screen")
     object HomeScreen : AppScreens("home_screen")
+    object ReviewScreen : AppScreens("review_screen")
     // Aquí añadiremos más pantallas como Home, etc.
 }
