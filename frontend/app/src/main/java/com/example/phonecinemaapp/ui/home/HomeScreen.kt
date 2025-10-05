@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,7 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
 import com.example.phonecinemaapp.ui.components.AppTopBar
-
+import androidx.compose.material.icons.filled.Menu // Para el menú hamburguesa
+import androidx.compose.material.icons.filled.MoreVert // Para los tres puntos
+import androidx.compose.material.icons.filled.Search // Para la lupa
+import androidx.compose.material.icons.outlined.Folder // Para la carpeta
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.ui.graphics.Color // Para definir el color verde
 
 // Ya no necesitamos los modelos de datos ni el ViewModel aquí.
 // Solo importamos lo necesario para la UI.
@@ -48,15 +54,55 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
-    onLogoutClick: () -> Unit,
+    onLogoutClick: () -> Unit, // Mantenemos el parámetro por si lo necesitas
     onMovieClick: (Int) -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AppTopBar(
-                title = "Cartelera", // 🔹 lo mismo que antes
-                onLogoutClick = onLogoutClick
+            // Aquí está el TopAppBar modificado para verse como el de la imagen
+            TopAppBar(
+                title = {
+                    Text("Películas") // Titulo de la barra
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFD4A106), // Color del topbar
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { /* TODO: Acción para abrir el menú lateral */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Abrir menú de navegación"
+                        )
+                    }
+                },
+                actions = {
+                    // Iconos de la derecha
+                    IconButton(onClick = { /* TODO: Acción para buscar */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Buscar"
+                        )
+                    }
+                    IconButton(onClick = { /* TODO: Acción para abrir Perfil */ }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Person, // Usamos el Outlined para que se parezca más
+                            contentDescription = "Perfil"
+                        )
+                    }
+                    IconButton(onClick = {
+                        // Icono para salir
+                        /* TODO: Acción para más opciones */
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Salir"
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -66,6 +112,7 @@ fun HomeScreenContent(
                 .padding(innerPadding),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
+            // El resto del contenido
             items(uiState.categorias) { categoria ->
                 Text(
                     text = categoria.nombre,
@@ -82,7 +129,6 @@ fun HomeScreenContent(
                         PeliculaItem(
                             pelicula = pelicula,
                             onMovieClick = { onMovieClick(pelicula.id) }
-
                         )
                     }
                 }

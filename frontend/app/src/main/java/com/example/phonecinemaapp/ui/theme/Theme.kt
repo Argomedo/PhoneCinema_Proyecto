@@ -23,6 +23,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun PhoneCinemaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme // Forzamos el tema oscuro siempre
