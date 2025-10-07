@@ -20,16 +20,16 @@ fun StarRating(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ){
-    Row (modifier = modifier){
-        for (i in 1..5){
+    Row(modifier = modifier) {
+        for (i in 1..5) {
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = "Estrella $i",
-                tint = if(i <= rating) PhoneCinemaYellow else Color.White.copy(alpha = 0.5f),
+                tint = if (i <= rating) PhoneCinemaYellow else Color.Gray.copy(alpha = 0.5f),
                 modifier = Modifier
-                    .size(32.dp)
-                    .clickable(enabled = enabled){ onRatingChange(i)}
-                    .padding(2.dp)
+                    .size(40.dp) // ajusta tamaño según tu diseño
+                    .clickable(enabled = enabled) { onRatingChange(i) }
+                    .padding(4.dp)
             )
         }
     }
