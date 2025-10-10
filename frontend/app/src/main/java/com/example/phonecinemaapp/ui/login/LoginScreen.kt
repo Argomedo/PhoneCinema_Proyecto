@@ -20,9 +20,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
 
-// -----------------------------------------------------------------------------------
+
 // PARTE 1: COMPOSABLE CON ESTADO (STATEFUL) - Gestiona la lógica y el ViewModel
-// -----------------------------------------------------------------------------------
 
 @Composable
 fun LoginScreen(
