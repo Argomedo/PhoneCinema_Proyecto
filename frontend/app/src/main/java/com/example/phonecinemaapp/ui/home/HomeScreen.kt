@@ -41,12 +41,10 @@ fun HomeScreen(
     onNavigateToMovieDetails: (Int) -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
-
     HomeScreenContent(
         uiState = uiState,
         onLogoutClick = onLogout,
-        onMovieClick = { peliculaId -> onNavigateToMovieDetails(peliculaId)
-        }
+        onMovieClick = onNavigateToMovieDetails
     )
 }
 
@@ -145,12 +143,12 @@ fun HomeScreenContent(
 @Composable
 fun PeliculaItem(
     pelicula: Pelicula,
-    onMovieClick: () -> Unit
+    onMovieClick: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
             .width(120.dp)
-            .clickable(onClick = onMovieClick),
+            .clickable { onMovieClick(pelicula.id) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(

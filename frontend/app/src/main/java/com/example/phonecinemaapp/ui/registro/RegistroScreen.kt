@@ -1,8 +1,9 @@
 package com.example.phonecinemaapp.ui.registro
 
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,14 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// -----------------------------------------------------------------------------------
-// PARTE 1: COMPOSABLE CON ESTADO (STATEFUL) - Gestiona la lógica y el ViewModel
-// -----------------------------------------------------------------------------------
 
+
+// Composable público que maneja el ViewModel y la navegación
 @Composable
 fun RegistroScreen(
     registroViewModel: RegistroViewModel = viewModel(),
@@ -33,42 +33,29 @@ fun RegistroScreen(
         }
     }
 
-    // Llama al Composable sin estado, pasándole el estado actual y las acciones
     RegistroScreenContent(
         nombreState = uiState.nombre,
         emailState = uiState.email,
         passwordState = uiState.contrasena,
         confirmPasswordState = uiState.confirmarContrasena,
         errorMensajeState = uiState.errorMensaje,
-        onNombreChange = { newNombre ->
-            registroViewModel.onRegistroChange(newNombre, uiState.email, uiState.contrasena, uiState.confirmarContrasena)
-        },
-        onEmailChange = { newEmail ->
-            registroViewModel.onRegistroChange(uiState.nombre, newEmail, uiState.contrasena, uiState.confirmarContrasena)
-        },
-        onPasswordChange = { newPassword ->
-            registroViewModel.onRegistroChange(uiState.nombre, uiState.email, newPassword, uiState.confirmarContrasena)
-        },
-        onConfirmPasswordChange = { newConfirmPassword ->
-            registroViewModel.onRegistroChange(uiState.nombre, uiState.email, uiState.contrasena, newConfirmPassword)
-        },
+        onNombreChange = { nombre -> registroViewModel.onRegistroChange(nombre, uiState.email, uiState.contrasena, uiState.confirmarContrasena) },
+        onEmailChange = { email -> registroViewModel.onRegistroChange(uiState.nombre, email, uiState.contrasena, uiState.confirmarContrasena) },
+        onPasswordChange = { pass -> registroViewModel.onRegistroChange(uiState.nombre, uiState.email, pass, uiState.confirmarContrasena) },
+        onConfirmPasswordChange = { confirm -> registroViewModel.onRegistroChange(uiState.nombre, uiState.email, uiState.contrasena, confirm) },
         onRegisterClick = { registroViewModel.registrarUsuario() },
         onNavigateToLoginClick = onNavigateToLogin
     )
 }
 
-
-// -----------------------------------------------------------------------------------
-// PARTE 2: COMPOSABLE SIN ESTADO (STATELESS) - Solo dibuja la UI
-// -----------------------------------------------------------------------------------
-
+// Composable privado que dibuja la UI
 @Composable
-fun RegistroScreenContent(
+private fun RegistroScreenContent(
     nombreState: String,
     emailState: String,
     passwordState: String,
     confirmPasswordState: String,
-    errorMensajeState: String?, // El mensaje de error puede ser nulo
+    errorMensajeState: String?,
     onNombreChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -76,6 +63,9 @@ fun RegistroScreenContent(
     onRegisterClick: () -> Unit,
     onNavigateToLoginClick: () -> Unit
 ) {
+    var showPass by remember { mutableStateOf(false) }
+    var showConfirm by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,16 +80,9 @@ fun RegistroScreenContent(
             value = nombreState,
             onValueChange = onNombreChange,
             label = { Text("Nombre de usuario") },
-            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = errorMensajeState != null,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White, unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White, unfocusedIndicatorColor = Color.LightGray,
-                errorIndicatorColor = MaterialTheme.colorScheme.error
-            )
+            modifier = Modifier.fillMaxWidth(),
+            isError = errorMensajeState != null
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -107,16 +90,9 @@ fun RegistroScreenContent(
             value = emailState,
             onValueChange = onEmailChange,
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = errorMensajeState != null,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White, unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White, unfocusedIndicatorColor = Color.LightGray,
-                errorIndicatorColor = MaterialTheme.colorScheme.error
-            )
+            modifier = Modifier.fillMaxWidth(),
+            isError = errorMensajeState != null
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -124,17 +100,16 @@ fun RegistroScreenContent(
             value = passwordState,
             onValueChange = onPasswordChange,
             label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = errorMensajeState != null,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White, unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White, unfocusedIndicatorColor = Color.LightGray,
-                errorIndicatorColor = MaterialTheme.colorScheme.error
-            )
+            visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { showPass = !showPass }) {
+                    val icon = if (showPass) androidx.compose.material.icons.Icons.Filled.VisibilityOff else androidx.compose.material.icons.Icons.Filled.Visibility
+                    Icon(icon, contentDescription = "Mostrar/Ocultar contraseña")
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = errorMensajeState != null
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -142,33 +117,26 @@ fun RegistroScreenContent(
             value = confirmPasswordState,
             onValueChange = onConfirmPasswordChange,
             label = { Text("Confirmar Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = errorMensajeState != null,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White, unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White, unfocusedIndicatorColor = Color.LightGray,
-                errorIndicatorColor = MaterialTheme.colorScheme.error
-            )
+            visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { showConfirm = !showConfirm }) {
+                    val icon = if (showConfirm) androidx.compose.material.icons.Icons.Filled.VisibilityOff else androidx.compose.material.icons.Icons.Filled.Visibility
+                    Icon(icon, contentDescription = "Mostrar/Ocultar confirmación")
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = errorMensajeState != null
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         errorMensajeState?.let { mensaje ->
-            Text(
-                text = mensaje,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Text(text = mensaje, color = MaterialTheme.colorScheme.error)
         }
 
         Button(
             onClick = onRegisterClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text("Registrarse")
         }
@@ -178,55 +146,4 @@ fun RegistroScreenContent(
             Text("¿Ya tienes una cuenta? Inicia sesión")
         }
     }
-}
-
-
-// -----------------------------------------------------------------------------------
-// PARTE 3: PREVISUALIZACIONES - Para ver tu UI sin ejecutar la app
-// -----------------------------------------------------------------------------------
-
-@Preview(
-    name = "Registro Screen - Normal",
-    showBackground = true,
-    backgroundColor = 0xFF1C1B1F,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-fun RegistroScreenPreview() {
-    RegistroScreenContent(
-        nombreState = "Juan Perez",
-        emailState = "juan.perez@email.com",
-        passwordState = "123456",
-        confirmPasswordState = "123456",
-        errorMensajeState = null, // No hay error
-        onNombreChange = {},
-        onEmailChange = {},
-        onPasswordChange = {},
-        onConfirmPasswordChange = {},
-        onRegisterClick = {},
-        onNavigateToLoginClick = {}
-    )
-}
-
-@Preview(
-    name = "Registro Screen - Con Error",
-    showBackground = true,
-    backgroundColor = 0xFF1C1B1F,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-fun RegistroScreenErrorPreview() {
-    RegistroScreenContent(
-        nombreState = "Juan Perez",
-        emailState = "juan.perez@email.com",
-        passwordState = "123456",
-        confirmPasswordState = "contraseña-diferente",
-        errorMensajeState = "Las contraseñas no coinciden.", // Simulamos un mensaje de error
-        onNombreChange = {},
-        onEmailChange = {},
-        onPasswordChange = {},
-        onConfirmPasswordChange = {},
-        onRegisterClick = {},
-        onNavigateToLoginClick = {}
-    )
 }
