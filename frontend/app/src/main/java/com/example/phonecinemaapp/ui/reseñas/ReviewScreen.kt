@@ -118,7 +118,6 @@ fun ReviewScreen(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Agregar lógica de logout si es necesario
                     }
                 )
             }
