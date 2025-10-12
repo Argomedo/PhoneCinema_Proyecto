@@ -39,7 +39,7 @@ fun PhoneCinemaTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        //typography = Typography, nose porque salta esto error
         content = content
     )
 }
