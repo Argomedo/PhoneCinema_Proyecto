@@ -1,10 +1,13 @@
 package com.example.phonecinemaapp.ui.perfil
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,11 +18,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.phonecinemaapp.R
-import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun PerfilScreen(
@@ -28,22 +32,103 @@ fun PerfilScreen(
     perfilViewModel: PerfilViewModel = viewModel()
 ) {
     val uiState by perfilViewModel.uiState.collectAsState()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) onLogout()
     }
 
+    // Manejar el botón de retroceso
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch {
+            drawerState.close()
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Menú principal",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+                Divider()
+
+                NavigationDrawerItem(
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onBackClick()
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        perfilViewModel.logout()
+                    }
+                )
+            }
+        }
+    ) {
+        PerfilScreenContent(
+            uiState = uiState,
+            onBackClick = onBackClick,
+            onSaveChanges = { perfilViewModel.guardarCambios() },
+            onNombreChange = { perfilViewModel.onNombreChange(it) },
+            onEmailChange = { perfilViewModel.onEmailChange(it) },
+            onMenuClick = { scope.launch { drawerState.open() } }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PerfilScreenContent(
+    uiState: PerfilUiState,
+    onBackClick: () -> Unit,
+    onSaveChanges: () -> Unit,
+    onNombreChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onMenuClick: () -> Unit
+) {
     val isLightTheme = !isSystemInDarkTheme()
     val backgroundColor = if (isLightTheme) LightBackground else DarkBackground
-    val textColor = if (isLightTheme) TextOnLight else TextOnDark
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Perfil",
-                showBackButton = true,
-                onBackClick = onBackClick,
-                onLogoutClick = { perfilViewModel.logout() }
+            TopAppBar(
+                title = {
+                    Text("Perfil")
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFD4A106),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                }
             )
         },
         containerColor = backgroundColor
@@ -83,7 +168,7 @@ fun PerfilScreen(
 
             OutlinedTextField(
                 value = uiState.nombre,
-                onValueChange = { perfilViewModel.onNombreChange(it) },
+                onValueChange = onNombreChange,
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -92,7 +177,7 @@ fun PerfilScreen(
 
             OutlinedTextField(
                 value = uiState.email,
-                onValueChange = { perfilViewModel.onEmailChange(it) },
+                onValueChange = onEmailChange,
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -108,7 +193,7 @@ fun PerfilScreen(
             }
 
             Button(
-                onClick = { perfilViewModel.guardarCambios() },
+                onClick = onSaveChanges,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PhoneCinemaBlue,
                     contentColor = LightBackground
@@ -127,7 +212,6 @@ fun PerfilScreen(
 fun PerfilScreenPreview() {
     PerfilScreen(
         onBackClick = {},
-        onLogout = {},
-        perfilViewModel = PerfilViewModel()
+        onLogout = {}
     )
 }

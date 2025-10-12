@@ -23,17 +23,23 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,8 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
-
-
+import kotlinx.coroutines.launch
 
 // Ya no necesitamos los modelos de datos ni el ViewModel aquí.
 // Solo importamos lo necesario para la UI.
@@ -54,71 +59,99 @@ import com.example.phonecinemaapp.R
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
     onLogout: () -> Unit,
-    onNavigateToMovieDetails: (Int) -> Unit
+    onNavigateToMovieDetails: (Int) -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    BackHandler {
-        onLogout() // Presionar atrás lleva al login
+    // Manejar el botón de retroceso
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch {
+            drawerState.close()
+        }
     }
 
-    HomeScreenContent(
-        uiState = uiState,
-        onLogoutClick = onLogout,
-        onMovieClick = onNavigateToMovieDetails
-    )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Menú principal",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+                Divider()
+
+                NavigationDrawerItem(
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToProfile()
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onLogout()
+                    }
+                )
+            }
+        }
+    ) {
+        HomeScreenContent(
+            uiState = uiState,
+            onLogoutClick = onLogout,
+            onMovieClick = onNavigateToMovieDetails,
+            onMenuClick = { scope.launch { drawerState.open() } },
+            onProfileClick = {
+                scope.launch { drawerState.close() }
+                onNavigateToProfile()
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
-    onLogoutClick: () -> Unit, // Mantenemos el parámetro por si lo necesitas
-    onMovieClick: (Int) -> Unit
+    onLogoutClick: () -> Unit,
+    onMovieClick: (Int) -> Unit,
+    onMenuClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            // Aquí está el TopAppBar modificado para verse como el de la imagen
             TopAppBar(
                 title = {
-                    Text("Películas") // Titulo de la barra
+                    Text("Películas")
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD4A106), // Color del topbar
+                    containerColor = Color(0xFFD4A106),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: Acción para abrir el menú lateral */ }) {
+                    IconButton(onClick = onMenuClick) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
+                            imageVector = Icons.Default.Menu, // Mantenemos Menu aquí
                             contentDescription = "Abrir menú de navegación"
-                        )
-                    }
-                },
-                actions = {
-                    // Iconos de la derecha
-                    IconButton(onClick = { /* TODO: Acción para buscar */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar"
-                        )
-                    }
-                    IconButton(onClick = { /* TODO: Acción para abrir Perfil */ }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Person, // Usamos el Outlined para que se parezca más
-                            contentDescription = "Perfil"
-                        )
-                    }
-                    IconButton(onClick = {
-                        // Icono para salir
-                        /* TODO: Acción para más opciones */
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Salir"
                         )
                     }
                 }
@@ -216,6 +249,27 @@ fun HomeScreenContentPreview() {
     HomeScreenContent(
         uiState = uiStateEjemplo,
         onLogoutClick = {},
-        onMovieClick = {}
+        onMovieClick = {},
+        onMenuClick = {},
+        onProfileClick = {}
+    )
+}
+
+// Preview del HomeScreen completo con drawer
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun HomeScreenPreview() {
+    val peliculasEjemplo = List(8) { Pelicula(it, "Película ${it + 1}", R.drawable.ic_logo) }
+    val categoriasEjemplo = listOf(
+        Categoria("Acción", peliculasEjemplo),
+        Categoria("Comedia", peliculasEjemplo.subList(0, 4))
+    )
+    val uiStateEjemplo = HomeUiState(categorias = categoriasEjemplo, nombreUsuario = "PreviewUser")
+
+    // Para el preview, necesitarías un ViewModel mock o usar remember
+    HomeScreen(
+        onLogout = {},
+        onNavigateToMovieDetails = {},
+        onNavigateToProfile = {}
     )
 }

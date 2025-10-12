@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.phonecinemaapp.ui.home.HomeScreen
 import com.example.phonecinemaapp.ui.login.LoginScreen
+import com.example.phonecinemaapp.ui.perfil.PerfilScreen
 import com.example.phonecinemaapp.ui.registro.RegistroScreen
 import com.example.phonecinemaapp.ui.registro.RegistroViewModel
 import com.example.phonecinemaapp.ui.reseñas.ReviewScreen
@@ -51,6 +52,9 @@ fun AppNavigation() {
                 },
                 onNavigateToMovieDetails = { movieId ->
                     navController.navigate("${AppScreens.ReviewScreen.route}/$movieId")
+                },
+                onNavigateToProfile = {
+                    navController.navigate(AppScreens.PerfilScreen.route)
                 }
             )
         }
@@ -62,7 +66,20 @@ fun AppNavigation() {
             val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
             ReviewScreen(
                 movieId = movieId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onNavigateToProfile = {
+                    navController.navigate(AppScreens.PerfilScreen.route)
+                }
+            )
+        }
+        composable(AppScreens.PerfilScreen.route) {
+            PerfilScreen(
+                onBackClick = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(AppScreens.PerfilScreen.route) { inclusive = true }
+                    }
+                }
             )
         }
     }
@@ -73,4 +90,5 @@ sealed class AppScreens(val route: String) {
     object RegistroScreen : AppScreens("registro_screen")
     object HomeScreen : AppScreens("home_screen")
     object ReviewScreen : AppScreens("review_screen")
+    object PerfilScreen : AppScreens ("perfil_screen")
 }

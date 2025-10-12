@@ -1,5 +1,6 @@
 package com.example.phonecinemaapp.ui.reseñas
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,22 +18,35 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,60 +56,124 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.data.PeliculaRepository
-import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.ui.home.Pelicula
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewScreen(
     movieId: Int,
     onBackClick: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     reviewViewModel: ReviewViewModel = viewModel()
 ) {
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     if (pelicula == null) {
         Text("Película no encontrada", modifier = Modifier.padding(16.dp))
         return
     }
 
-    // Filtramos las reseñas solo una vez
-    val movieReviews = remember(uiState.reviews, pelicula.id) {
-        uiState.reviews.filter { it.movieId == pelicula.id }
+    // Manejar el botón de retroceso
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch {
+            drawerState.close()
+        }
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = pelicula.nombre,
-                showBackButton = true,
-                onBackClick = onBackClick,
-                onLogoutClick = {}
-            )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Menú principal",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+                Divider()
+
+                NavigationDrawerItem(
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onBackClick()
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToProfile()
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        // TODO: Agregar lógica de logout si es necesario
+                    }
+                )
+            }
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            MovieHeader(pelicula)
+    ) {
+        // Filtramos las reseñas solo una vez
+        val movieReviews = remember(uiState.reviews, pelicula.id) {
+            uiState.reviews.filter { it.movieId == pelicula.id }
+        }
 
-            ReviewInputSection(
-                rating = uiState.currentRating,
-                reviewText = uiState.currentReviewText,
-                onRatingChange = reviewViewModel::setRating,
-                onReviewTextChange = reviewViewModel::setReviewText,
-                onSubmitReview = { reviewViewModel.submitReview(pelicula.id) },
-                modifier = Modifier.padding(16.dp)
-            )
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(pelicula.nombre)
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFFD4A106),
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                imageVector = Icons.Default.List,
+                                contentDescription = "Abrir menú de navegación"
+                            )
+                        }
+                    }
+                )
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                MovieHeader(pelicula)
 
-            ReviewsList(
-                reviews = movieReviews,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+                ReviewInputSection(
+                    rating = uiState.currentRating,
+                    reviewText = uiState.currentReviewText,
+                    onRatingChange = reviewViewModel::setRating,
+                    onReviewTextChange = reviewViewModel::setReviewText,
+                    onSubmitReview = { reviewViewModel.submitReview(pelicula.id) },
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                ReviewsList(
+                    reviews = movieReviews,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
         }
     }
 }
@@ -197,7 +275,7 @@ fun ReviewInputSection(
             ) {
                 for (i in 1..5) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                        imageVector = Icons.Default.Star,
                         contentDescription = "Estrella $i",
                         tint = if (i <= rating) Color(0xFFFFC107) else Color.Gray,
                         modifier = Modifier
@@ -276,7 +354,7 @@ fun ReviewsList(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Email,
+                        imageVector = Icons.Default.Email,
                         contentDescription = "Sin reseñas",
                         tint = Color.Gray,
                         modifier = Modifier.size(48.dp)
@@ -296,6 +374,52 @@ fun ReviewsList(
                     ReviewItem(review = review)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ReviewItem(review: Review) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = review.userName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Calificación",
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = review.rating.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = review.comment,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            )
         }
     }
 }
