@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -103,17 +104,57 @@ fun MovieHeader(pelicula: Pelicula) {
             .padding(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = pelicula.nombre,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Imagen a la izquierda
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = pelicula.posterResId),
+                contentDescription = pelicula.nombre,
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(180.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = pelicula.descripcion)
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Texto a la derecha
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = pelicula.nombre,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Línea de metadatos: género • duración • año
+                Text(
+                    text = listOfNotNull(
+                        pelicula.genero.takeIf { it.isNotBlank() },
+                        pelicula.duracion.takeIf { it.isNotBlank() },
+                        pelicula.año.takeIf { it != 0 }?.toString()
+                    ).joinToString(" • "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = pelicula.descripcion,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
+
+
+
 
 @Composable
 fun ReviewInputSection(
