@@ -2,6 +2,7 @@ package com.example.phonecinemaapp.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,11 +48,15 @@ fun AppNavigation() {
             HomeScreen(
                 onLogout = {
                     navController.navigate(AppScreens.LoginScreen.route) {
-                        popUpTo(AppScreens.HomeScreen.route) { inclusive = true }
+                        // CAMBIO 2: Lógica de logout más robusta
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
                     }
                 },
                 onNavigateToMovieDetails = { movieId ->
-                    navController.navigate("${AppScreens.ReviewScreen.route}/$movieId")
+                    // CAMBIO 1: Llamada a la nueva función para crear la ruta
+                    navController.navigate(AppScreens.ReviewScreen.createRoute(movieId))
                 },
                 onNavigateToProfile = {
                     navController.navigate(AppScreens.PerfilScreen.route)
@@ -59,8 +64,9 @@ fun AppNavigation() {
             )
         }
 
+        // La definición de la ruta ahora incluye el argumento directamente
         composable(
-            route = "${AppScreens.ReviewScreen.route}/{movieId}",
+            route = AppScreens.ReviewScreen.route,
             arguments = listOf(navArgument("movieId") { type = NavType.IntType })
         ) { backStackEntry ->
             val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
@@ -77,7 +83,10 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(AppScreens.LoginScreen.route) {
-                        popUpTo(AppScreens.PerfilScreen.route) { inclusive = true }
+                        // CAMBIO 2: Lógica de logout más robusta
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
                     }
                 }
             )
@@ -89,6 +98,10 @@ sealed class AppScreens(val route: String) {
     object LoginScreen : AppScreens("login_screen")
     object RegistroScreen : AppScreens("registro_screen")
     object HomeScreen : AppScreens("home_screen")
-    object ReviewScreen : AppScreens("review_screen")
-    object PerfilScreen : AppScreens ("perfil_screen")
+    object PerfilScreen : AppScreens("perfil_screen")
+
+    // CAMBIO 1: Modificación para centralizar la creación de la ruta
+    object ReviewScreen : AppScreens("review_screen/{movieId}") {
+        fun createRoute(movieId: Int) = "review_screen/$movieId"
+    }
 }

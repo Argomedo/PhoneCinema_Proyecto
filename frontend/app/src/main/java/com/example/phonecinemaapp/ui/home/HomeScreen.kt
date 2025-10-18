@@ -113,7 +113,7 @@ fun HomeScreen(
             uiState = uiState,
             onLogoutClick = onLogout,
             onMovieClick = onNavigateToMovieDetails,
-            onMenuClick = { scope.launch { drawerState.open() } },
+            onMenuClick = { scope.launch { if (drawerState.isClosed) { drawerState.open() } } },
             onProfileClick = {
                 scope.launch { drawerState.close() }
                 onNavigateToProfile()
