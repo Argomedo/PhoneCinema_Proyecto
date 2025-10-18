@@ -1,6 +1,13 @@
 package com.example.phonecinemaapp.ui.reseñas
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
@@ -14,12 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ReviewItem(
-    review: Review,
+    review: ReviewEntity,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -27,58 +36,35 @@ fun ReviewItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF253B76).copy(alpha = 0.1f)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF253B76).copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header con usuario y fecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Usuario",
-                    modifier = Modifier.size(16.dp)
-                )
+                Icon(Icons.Default.Person, contentDescription = "Usuario", modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = review.userName,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = formatDate(review.date),
-                    color = Color.Gray
-                )
+                Text(review.userName, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(formatDate(review.timestamp), color = Color.Gray)
             }
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            // Calificación con estrellas
             Row {
-                for (i in 1..5) {
+                repeat(5) { i ->
                     Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Estrella $i",
-                        tint = if (i <= review.rating) Color(0xFFFFC107) else Color.Gray,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(2.dp)
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (i < review.rating.toInt()) Color(0xFFFFC107) else Color.Gray,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Reseña textual
-            Text(
-                text = review.comment
-            )
+            Text(review.comment)
         }
     }
 }
+
 
 private fun formatDate(timestamp: Long): String {
     val date = Date(timestamp)

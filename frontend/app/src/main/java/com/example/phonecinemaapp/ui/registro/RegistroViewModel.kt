@@ -2,9 +2,11 @@ package com.example.phonecinemaapp.ui.registro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.phonecinemaapp.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class RegistroUiState(
@@ -16,44 +18,35 @@ data class RegistroUiState(
     val errorMensaje: String? = null
 )
 
-class RegistroViewModel : ViewModel() {
+class RegistroViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegistroUiState())
     val uiState: StateFlow<RegistroUiState> = _uiState.asStateFlow()
 
-    fun onRegistroChange(nombre: String, email: String, contrasena: String, confirmar: String) {
-        _uiState.value = _uiState.value.copy(
-            nombre = nombre,
-            email = email,
-            contrasena = contrasena,
-            confirmarContrasena = confirmar
-        )
-    }
+    fun onNameChange(value: String) = _uiState.update { it.copy(nombre = value) }
+    fun onEmailChange(value: String) = _uiState.update { it.copy(email = value) }
+    fun onPasswordChange(value: String) = _uiState.update { it.copy(contrasena = value) }
+    fun onConfirmPasswordChange(value: String) = _uiState.update { it.copy(confirmarContrasena = value) }
 
     fun registrarUsuario() {
-        val state = uiState.value
-
-        if (state.nombre.isBlank() || state.email.isBlank() || state.contrasena.isBlank()) {
-            _uiState.value = state.copy(errorMensaje = "Todos los campos son obligatorios.")
+        val s = _uiState.value
+        if (s.contrasena != s.confirmarContrasena) {
+            _uiState.update { it.copy(errorMensaje = "Las contraseñas no coinciden") }
             return
         }
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(state.email).matches()) {
-            _uiState.value = state.copy(errorMensaje = "Formato de email inválido.")
+        if (s.nombre.isBlank() || s.email.isBlank() || s.contrasena.isBlank()) {
+            _uiState.update { it.copy(errorMensaje = "Todos los campos son obligatorios") }
             return
         }
-        if (state.contrasena.length < 6) {
-            _uiState.value = state.copy(errorMensaje = "La contraseña debe tener al menos 6 caracteres.")
-            return
-        }
-        if (state.contrasena != state.confirmarContrasena) {
-            _uiState.value = state.copy(errorMensaje = "Las contraseñas no coinciden.")
-            return
-        }
-
-        _uiState.value = state.copy(errorMensaje = null)
 
         viewModelScope.launch {
-            _uiState.value = state.copy(registroExitoso = true)
+            val result = userRepository.register(s.nombre, s.email, s.contrasena)
+            _uiState.update {
+                if (result.isSuccess) it.copy(registroExitoso = true, errorMensaje = null)
+                else it.copy(errorMensaje = result.exceptionOrNull()?.message)
+            }
         }
     }
 }

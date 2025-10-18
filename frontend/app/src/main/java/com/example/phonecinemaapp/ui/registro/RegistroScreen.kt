@@ -2,6 +2,7 @@ package com.example.phonecinemaapp.ui.registro
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -13,55 +14,50 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 
-
-
-// Composable público que maneja el ViewModel y la navegación
 @Composable
 fun RegistroScreen(
-    registroViewModel: RegistroViewModel = viewModel(),
+    registroViewModel: RegistroViewModel,
     onNavigateToLogin: () -> Unit
 ) {
     val uiState by registroViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = uiState.registroExitoso) {
+    LaunchedEffect(uiState.registroExitoso) {
         if (uiState.registroExitoso) {
-            Toast.makeText(context, "¡Registro exitoso!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
             onNavigateToLogin()
         }
     }
 
-    RegistroScreenContent(
-        nombreState = uiState.nombre,
-        emailState = uiState.email,
-        passwordState = uiState.contrasena,
-        confirmPasswordState = uiState.confirmarContrasena,
-        errorMensajeState = uiState.errorMensaje,
-        onNombreChange = { nombre -> registroViewModel.onRegistroChange(nombre, uiState.email, uiState.contrasena, uiState.confirmarContrasena) },
-        onEmailChange = { email -> registroViewModel.onRegistroChange(uiState.nombre, email, uiState.contrasena, uiState.confirmarContrasena) },
-        onPasswordChange = { pass -> registroViewModel.onRegistroChange(uiState.nombre, uiState.email, pass, uiState.confirmarContrasena) },
-        onConfirmPasswordChange = { confirm -> registroViewModel.onRegistroChange(uiState.nombre, uiState.email, uiState.contrasena, confirm) },
-        onRegisterClick = { registroViewModel.registrarUsuario() },
-        onNavigateToLoginClick = onNavigateToLogin
+    RegistroContent(
+        nombre = uiState.nombre,
+        email = uiState.email,
+        password = uiState.contrasena,
+        confirm = uiState.confirmarContrasena,
+        error = uiState.errorMensaje,
+        onNombreChange = registroViewModel::onNameChange,
+        onEmailChange = registroViewModel::onEmailChange,
+        onPasswordChange = registroViewModel::onPasswordChange,
+        onConfirmChange = registroViewModel::onConfirmPasswordChange,
+        onRegisterClick = registroViewModel::registrarUsuario,
+        onLoginClick = onNavigateToLogin
     )
 }
 
-// Composable privado que dibuja la UI
 @Composable
-private fun RegistroScreenContent(
-    nombreState: String,
-    emailState: String,
-    passwordState: String,
-    confirmPasswordState: String,
-    errorMensajeState: String?,
+private fun RegistroContent(
+    nombre: String,
+    email: String,
+    password: String,
+    confirm: String,
+    error: String?,
     onNombreChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
-    onConfirmPasswordChange: (String) -> Unit,
+    onConfirmChange: (String) -> Unit,
     onRegisterClick: () -> Unit,
-    onNavigateToLoginClick: () -> Unit
+    onLoginClick: () -> Unit
 ) {
     var showPass by remember { mutableStateOf(false) }
     var showConfirm by remember { mutableStateOf(false) }
@@ -73,77 +69,80 @@ private fun RegistroScreenContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Crear Cuenta", style = MaterialTheme.typography.headlineMedium, color = Color.White)
-        Spacer(modifier = Modifier.height(32.dp))
+        Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium, color = Color.White)
+        Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = nombreState,
+            value = nombre,
             onValueChange = onNombreChange,
-            label = { Text("Nombre de usuario") },
+            label = { Text("Nombre completo") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            isError = errorMensajeState != null
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = emailState,
+            value = email,
             onValueChange = onEmailChange,
-            label = { Text("Email") },
+            label = { Text("Correo electrónico") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            isError = errorMensajeState != null
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = passwordState,
+            value = password,
             onValueChange = onPasswordChange,
             label = { Text("Contraseña") },
-            singleLine = true,
             visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { showPass = !showPass }) {
-                    val icon = if (showPass) androidx.compose.material.icons.Icons.Filled.VisibilityOff else androidx.compose.material.icons.Icons.Filled.Visibility
-                    Icon(icon, contentDescription = "Mostrar/Ocultar contraseña")
+                    Icon(
+                        imageVector = if (showPass) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = null
+                    )
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            isError = errorMensajeState != null
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = confirmPasswordState,
-            onValueChange = onConfirmPasswordChange,
-            label = { Text("Confirmar Contraseña") },
-            singleLine = true,
+            value = confirm,
+            onValueChange = onConfirmChange,
+            label = { Text("Confirmar contraseña") },
             visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { showConfirm = !showConfirm }) {
-                    val icon = if (showConfirm) androidx.compose.material.icons.Icons.Filled.VisibilityOff else androidx.compose.material.icons.Icons.Filled.Visibility
-                    Icon(icon, contentDescription = "Mostrar/Ocultar confirmación")
+                    Icon(
+                        imageVector = if (showConfirm) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = null
+                    )
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            isError = errorMensajeState != null
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(16.dp))
 
-        errorMensajeState?.let { mensaje ->
-            Text(text = mensaje, color = MaterialTheme.colorScheme.error)
+        error?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onRegisterClick,
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text("Registrarse")
+            Text("Registrar")
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onNavigateToLoginClick) {
-            Text("¿Ya tienes una cuenta? Inicia sesión")
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TextButton(onClick = onLoginClick) {
+            Text("¿Ya tienes cuenta? Inicia sesión")
         }
     }
 }

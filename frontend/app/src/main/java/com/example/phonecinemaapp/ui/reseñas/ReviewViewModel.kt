@@ -1,56 +1,54 @@
 package com.example.phonecinemaapp.ui.reseñas
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.phonecinemaapp.data.local.review.ReviewEntity
+import com.example.phonecinemaapp.data.repository.ReviewRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
-
-// Modelos de datos para reseñas
-data class Review(
-    val id: String,
-    val movieId: Int,
-    val userName: String,
-    val rating: Int,
-    val comment: String,
-    val date: Long
-)
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class ReviewUiState(
     val currentRating: Int = 0,
     val currentReviewText: String = "",
-    val reviews: List<Review> = emptyList()
+    val reviews: List<ReviewEntity> = emptyList()
 )
 
-class ReviewViewModel : ViewModel() {
+class ReviewViewModel(
+    private val reviewRepository: ReviewRepository
+) : ViewModel() {
+
     private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
 
-    fun setRating(newRating: Int) {
-        _uiState.value = _uiState.value.copy(currentRating = newRating)
+    fun setRating(value: Int) {
+        _uiState.update { it.copy(currentRating = value) }
     }
 
-    fun setReviewText(text: String) {
-        _uiState.value = _uiState.value.copy(currentReviewText = text)
+    fun setReviewText(value: String) {
+        _uiState.update { it.copy(currentReviewText = value) }
     }
 
-    fun submitReview(movieId: Int, userName: String = "Usuario") {
-        val currentState = _uiState.value
-        if (currentState.currentRating > 0 && currentState.currentReviewText.isNotBlank()) {
-            val newReview = Review(
-                id = UUID.randomUUID().toString(),
-                movieId = movieId,
-                userName = userName,
-                rating = currentState.currentRating,
-                comment = currentState.currentReviewText,
-                date = System.currentTimeMillis()
-            )
-
-            _uiState.value = currentState.copy(
-                reviews = listOf(newReview) + currentState.reviews,
-                currentRating = 0,
-                currentReviewText = ""
-            )
+    fun loadReviews(movieId: Int) {
+        viewModelScope.launch {
+            val reviews = reviewRepository.getReviewsForMovie(movieId)
+            _uiState.update { it.copy(reviews = reviews) }
         }
+    }
+
+    fun addReview(review: ReviewEntity) {
+        viewModelScope.launch {
+            reviewRepository.addReview(review)
+            val updated = reviewRepository.getReviewsForMovie(review.movieId)
+            _uiState.update {
+                it.copy(reviews = updated, currentRating = 0, currentReviewText = "")
+            }
+        }
+    }
+
+    fun setReviews(reviews: List<ReviewEntity>) {
+        _uiState.update { it.copy(reviews = reviews) }
     }
 }

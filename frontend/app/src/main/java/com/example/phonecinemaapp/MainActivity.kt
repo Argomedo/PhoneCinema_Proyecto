@@ -8,11 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.phonecinemaapp.ui.login.*
-import com.example.phonecinemaapp.ui.theme.*
-import com.example.phonecinemaapp.navigation.AppNavigation // <-- Importa tu navegación
-
-
+import com.example.phonecinemaapp.navigation.AppNavigation
+import com.example.phonecinemaapp.ui.theme.PhoneCinemaTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +22,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Llamamos a nuestro gestor de navegación
                     AppNavigation()
                 }
             }

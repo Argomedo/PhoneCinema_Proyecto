@@ -21,10 +21,12 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = Color.White           // Texto sobre superficies azules
 )
 
+// Definición básica de Typography
+private val AppTypography = Typography()
+
 @Composable
 fun PhoneCinemaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme // Forzamos el tema oscuro siempre
@@ -39,7 +41,7 @@ fun PhoneCinemaTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        //typography = Typography, nose porque salta esto error
+        typography = AppTypography,
         content = content
     )
 }

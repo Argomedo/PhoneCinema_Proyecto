@@ -19,9 +19,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,73 +63,46 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Manejar el botón de retroceso
-    BackHandler(enabled = drawerState.isOpen) {
-        scope.launch {
-            drawerState.close()
-        }
-    }
-
+    // Mostrar nombre dinámico en la barra o menú
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
-                    text = "Menú principal",
+                    text = "Bienvenido, ${uiState.nombreUsuario}",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp)
                 )
-                Divider()
-
-                NavigationDrawerItem(
-                    label = { Text("Inicio") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Perfil") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onNavigateToProfile()
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onLogout()
-                    }
-                )
+                HorizontalDivider()
+                NavigationDrawerItem(label = { Text("Inicio") }, selected = false, onClick = {
+                    scope.launch { drawerState.close() }
+                })
+                NavigationDrawerItem(label = { Text("Perfil") }, selected = false, onClick = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToProfile()
+                })
+                NavigationDrawerItem(label = { Text("Cerrar sesión") }, selected = false, onClick = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
+                })
             }
         }
     ) {
         HomeScreenContent(
             uiState = uiState,
-            onLogoutClick = onLogout,
             onMovieClick = onNavigateToMovieDetails,
-            onMenuClick = { scope.launch { if (drawerState.isClosed) { drawerState.open() } } },
-            onProfileClick = {
-                scope.launch { drawerState.close() }
-                onNavigateToProfile()
-            }
+            onMenuClick = { scope.launch { drawerState.open() } }
         )
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     uiState: HomeUiState,
-    onLogoutClick: () -> Unit,
     onMovieClick: (Int) -> Unit,
-    onMenuClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onMenuClick: () -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -181,7 +154,7 @@ fun HomeScreenContent(
                         )
                     }
                 }
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                     thickness = 3.dp
@@ -245,10 +218,8 @@ fun HomeScreenContentPreview() {
 
     HomeScreenContent(
         uiState = uiStateEjemplo,
-        onLogoutClick = {},
         onMovieClick = {},
-        onMenuClick = {},
-        onProfileClick = {}
+        onMenuClick = {}
     )
 }
 
@@ -256,13 +227,6 @@ fun HomeScreenContentPreview() {
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun HomeScreenPreview() {
-    val peliculasEjemplo = List(8) { Pelicula(it, "Película ${it + 1}", R.drawable.ic_logo) }
-    val categoriasEjemplo = listOf(
-        Categoria("Acción", peliculasEjemplo),
-        Categoria("Comedia", peliculasEjemplo.subList(0, 4))
-    )
-    val uiStateEjemplo = HomeUiState(categorias = categoriasEjemplo, nombreUsuario = "PreviewUser")
-
     // Para el preview, necesitarías un ViewModel mock o usar remember
     HomeScreen(
         onLogout = {},

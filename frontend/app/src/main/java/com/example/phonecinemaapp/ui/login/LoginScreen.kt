@@ -18,170 +18,103 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phonecinemaapp.R
 
-// ------------------- Stateful Composable -------------------
-
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel = viewModel(),
+    loginViewModel: LoginViewModel,
     onLoginExitoso: () -> Unit,
     onNavigateToRegistro: () -> Unit
 ) {
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = uiState.loginExitoso) {
+    LaunchedEffect(uiState.loginExitoso) {
         if (uiState.loginExitoso) {
-            Toast.makeText(context, "¡Login exitoso!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
             loginViewModel.clearLoginResult()
             onLoginExitoso()
         }
     }
 
-    LoginScreenContent(
-        emailState = uiState.email,
-        passwordState = uiState.contrasena,
-        emailError = uiState.emailError,
-        passError = uiState.passError,
-        canSubmit = uiState.canSubmit,
-        isSubmitting = uiState.isSubmitting,
-        errorMsg = uiState.errorMsg,
-        onEmailChange = { email -> loginViewModel.onLoginChange(email, uiState.contrasena) },
-        onPasswordChange = { pass -> loginViewModel.onLoginChange(uiState.email, pass) },
-        onLoginClick = { loginViewModel.iniciarSesion() },
-        onRegisterClick = onNavigateToRegistro,
-        onForgotPasswordClick = { /* TODO */ }
+    LoginContent(
+        email = uiState.email,
+        password = uiState.contrasena,
+        error = uiState.errorMsg,
+        onEmailChange = loginViewModel::onEmailChange,
+        onPasswordChange = loginViewModel::onPasswordChange,
+        onLoginClick = loginViewModel::iniciarSesion,
+        onRegisterClick = onNavigateToRegistro
     )
 }
 
-// ------------------- Stateless UI Composable -------------------
-
 @Composable
-fun LoginScreenContent(
-    emailState: String,
-    passwordState: String,
-    emailError: String?,
-    passError: String?,
-    canSubmit: Boolean,
-    isSubmitting: Boolean,
-    errorMsg: String?,
+private fun LoginContent(
+    email: String,
+    password: String,
+    error: String?,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onRegisterClick: () -> Unit
 ) {
-    var passwordVisible by remember { mutableStateOf(false) }
+    var passVisible by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_logo),
-            contentDescription = "Logo de PhoneCinema",
-            modifier = Modifier.size(180.dp)
-        )
-        Spacer(modifier = Modifier.height(40.dp))
+        Image(painter = painterResource(R.drawable.ic_logo), contentDescription = null, modifier = Modifier.size(160.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
-            value = emailState,
+            value = email,
             onValueChange = onEmailChange,
-            label = { Text("Usuario o Correo") },
-            isError = emailError != null,
+            label = { Text("Correo electrónico") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White,
-                unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White,
-                unfocusedIndicatorColor = Color.LightGray
-            )
+            modifier = Modifier.fillMaxWidth()
         )
-        if (emailError != null) {
-            Text(emailError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = passwordState,
+            value = password,
             onValueChange = onPasswordChange,
             label = { Text("Contraseña") },
             singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (passVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(onClick = { passVisible = !passVisible }) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                        imageVector = if (passVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = null
                     )
                 }
             },
-            isError = passError != null,
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedLabelColor = Color.White,
-                unfocusedLabelColor = Color.LightGray,
-                focusedIndicatorColor = Color.White,
-                unfocusedIndicatorColor = Color.LightGray
-            )
+            modifier = Modifier.fillMaxWidth()
         )
-        if (passError != null) {
-            Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            TextButton(onClick = onForgotPasswordClick) {
-                Text("¿Olvidaste tu Contraseña?", color = Color.White, fontSize = 12.sp)
-            }
+        error?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onLoginClick,
-            enabled = canSubmit && !isSubmitting,
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(50),
-        ) {
-            if (isSubmitting) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Validando...")
-            } else {
-                Text("ENTRAR", fontSize = 16.sp)
-            }
-        }
-
-        if (errorMsg != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(errorMsg, color = MaterialTheme.colorScheme.error)
-        }
+            shape = RoundedCornerShape(50)
+        ) { Text("Entrar") }
 
         Spacer(modifier = Modifier.height(12.dp))
 
         TextButton(onClick = onRegisterClick) {
-            Text("¿No tienes una cuenta? Regístrate aquí", color = Color.White)
+            Text("¿No tienes cuenta? Regístrate")
         }
-
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }

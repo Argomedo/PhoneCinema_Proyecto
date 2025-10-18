@@ -1,217 +1,113 @@
 package com.example.phonecinemaapp.ui.perfil
 
-import android.annotation.SuppressLint
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberAsyncImagePainter
-import com.example.phonecinemaapp.R
-import com.example.phonecinemaapp.ui.theme.*
-import kotlinx.coroutines.launch
+import com.example.phonecinemaapp.data.local.database.AppDatabase
+import com.example.phonecinemaapp.data.repository.UserRepository
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
     onBackClick: () -> Unit,
-    onLogout: () -> Unit = {},
-    perfilViewModel: PerfilViewModel = viewModel()
+    onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context)
+    val userRepository = remember { UserRepository(database.userDao()) }
+    val perfilViewModel: PerfilViewModel = viewModel(factory = PerfilViewModelFactory(userRepository))
     val uiState by perfilViewModel.uiState.collectAsState()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.isLoggedOut) {
-        if (uiState.isLoggedOut) onLogout()
+    LaunchedEffect(Unit) {
+        perfilViewModel.cargarUsuario("test@test.com") // usuario simulado
     }
 
-    // Manejar el botón de retroceso
-    BackHandler(enabled = drawerState.isOpen) {
-        scope.launch {
-            drawerState.close()
-        }
+    if (uiState.isLoggedOut) {
+        onLogout()
+        return
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Text(
-                    text = "Menú principal",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-                Divider()
-
-                NavigationDrawerItem(
-                    label = { Text("Inicio") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onBackClick()
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Perfil") },
-                    selected = true,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        perfilViewModel.logout()
-                    }
-                )
-            }
-        }
-    ) {
-        PerfilScreenContent(
-            uiState = uiState,
-            onBackClick = onBackClick,
-            onSaveChanges = { perfilViewModel.guardarCambios() },
-            onNombreChange = { perfilViewModel.onNombreChange(it) },
-            onEmailChange = { perfilViewModel.onEmailChange(it) },
-            onMenuClick = { scope.launch { drawerState.open() } }
-        )
-    }
+    PerfilContent(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onSave = perfilViewModel::guardarCambios,
+        onNombreChange = perfilViewModel::onNombreChange,
+        onEmailChange = perfilViewModel::onEmailChange,
+        onLogout = perfilViewModel::logout
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PerfilScreenContent(
+fun PerfilContent(
     uiState: PerfilUiState,
     onBackClick: () -> Unit,
-    onSaveChanges: () -> Unit,
+    onSave: () -> Unit,
     onNombreChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
-    onMenuClick: () -> Unit
+    onLogout: () -> Unit
 ) {
-    val isLightTheme = !isSystemInDarkTheme()
-    val backgroundColor = if (isLightTheme) LightBackground else DarkBackground
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("Perfil")
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFD4A106),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                ),
+                title = { Text("Perfil") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFD4A106))
             )
-        },
-        containerColor = backgroundColor
+        }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Foto de perfil con fondo amarillo
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(PhoneCinemaYellow),
-                contentAlignment = Alignment.Center
-            ) {
-                val painter = if (uiState.fotoUrl.isNotEmpty()) {
-                    rememberAsyncImagePainter(model = uiState.fotoUrl)
-                } else {
-                    painterResource(id = R.drawable.ic_perfil_logo)
-                }
-
-                Image(
-                    painter = painter,
-                    contentDescription = "Foto de perfil",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(110.dp)
-                        .clip(CircleShape)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
             OutlinedTextField(
                 value = uiState.nombre,
                 onValueChange = onNombreChange,
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = onEmailChange,
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            uiState.errorMensaje?.let { mensaje ->
-                Text(
-                    text = mensaje,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-
-            Button(
-                onClick = onSaveChanges,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PhoneCinemaBlue,
-                    contentColor = LightBackground
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
                 Text("Guardar Cambios")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onLogout, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red, contentColor = Color.White
+            )) {
+                Text("Cerrar Sesión")
             }
         }
     }
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun PerfilScreenPreview() {
-    PerfilScreen(
-        onBackClick = {},
-        onLogout = {}
-    )
 }
