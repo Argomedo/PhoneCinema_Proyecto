@@ -20,6 +20,7 @@ import com.example.phonecinemaapp.data.PeliculaRepository
 import com.example.phonecinemaapp.data.local.database.AppDatabase
 import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import com.example.phonecinemaapp.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.ui.home.Pelicula
 import kotlinx.coroutines.launch
 
@@ -77,8 +78,8 @@ fun ReviewScreen(
                     val newReview = ReviewEntity(
                         id = 0,
                         movieId = pelicula.id,
-                        userId = 1L, // usuario local o fijo
-                        userName = "Usuario",
+                        userId = UserSession.currentUser?.id ?: 1L, // usuario local o fijo
+                        userName = UserSession.currentUser?.name ?: "Usuario",
                         rating = uiState.currentRating.toFloat(),
                         comment = uiState.currentReviewText,
                         timestamp = System.currentTimeMillis()

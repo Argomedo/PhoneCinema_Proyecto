@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
+import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.launch
 
 // Ya no necesitamos los modelos de datos ni el ViewModel aquí.
@@ -67,35 +69,63 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                drawerContainerColor = MaterialTheme.colorScheme.surface,  // ← evita el fondo azul
+                drawerTonalElevation = 8.dp
+            ) {
                 Text(
                     text = "Bienvenido, ${uiState.nombreUsuario}",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp)
                 )
                 HorizontalDivider()
-                NavigationDrawerItem(label = { Text("Inicio") }, selected = false, onClick = {
-                    scope.launch { drawerState.close() }
-                })
-                NavigationDrawerItem(label = { Text("Perfil") }, selected = false, onClick = {
-                    scope.launch { drawerState.close() }
-                    onNavigateToProfile()
-                })
-                NavigationDrawerItem(label = { Text("Cerrar sesión") }, selected = false, onClick = {
-                    scope.launch { drawerState.close() }
-                    onLogout()
-                })
-            }
-        }
-    ) {
-        HomeScreenContent(
-            uiState = uiState,
-            onMovieClick = onNavigateToMovieDetails,
-            onMenuClick = { scope.launch { drawerState.open() } }
-        )
-    }
-}
 
+                NavigationDrawerItem(
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            kotlinx.coroutines.delay(250)
+                            onNavigateToProfile()
+                        }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            kotlinx.coroutines.delay(250)
+                            onLogout()
+                        }
+                    }
+                )
+            }
+        },
+        content = {
+            HomeScreenContent(
+                uiState = uiState,
+                onMovieClick = onNavigateToMovieDetails,
+                onMenuClick = { scope.launch { drawerState.open() } }
+            )
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        val user = UserSession.currentUser
+        if (user != null) homeViewModel.loadUser(user.name)
+    }
+
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

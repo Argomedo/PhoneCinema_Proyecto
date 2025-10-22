@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.local.user.UserEntity
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.data.session.UserSession       // ← Import necesario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +47,11 @@ class LoginViewModel(
             val result = userRepository.login(state.email, state.contrasena)
             if (result.isSuccess) {
                 currentUser = result.getOrNull()
+
+                // === NUEVO BLOQUE: guarda el usuario en la sesión global ===
+                UserSession.currentUser = currentUser
+                // ===========================================================
+
                 _uiState.update { it.copy(loginExitoso = true, errorMsg = null) }
             } else {
                 _uiState.update {

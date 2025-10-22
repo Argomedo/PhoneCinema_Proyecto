@@ -55,13 +55,17 @@ class PerfilViewModel(
         viewModelScope.launch {
             val state = _uiState.value
             if (state.id != 0L) {
+                val existingUser = userRepository.getUserByEmail(state.email)
+                val passwordToKeep = existingUser?.password ?: ""
+
                 val updated = UserEntity(
                     id = state.id,
                     name = state.nombre,
                     email = state.email,
-                    password = "" // no se actualiza desde aquí
+                    password = passwordToKeep
                 )
                 userRepository.updateUser(updated)
+                _uiState.update { it.copy(errorMensaje = "Datos guardados correctamente") }
             }
         }
     }
