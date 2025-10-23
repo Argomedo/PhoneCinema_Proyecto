@@ -9,5 +9,6 @@ data class UserEntity(
     val id: Long = 0L,
     val name: String,
     val email: String,
-    val password: String
+    val password: String,
+    val photousuario: String= "" // Agrege este campo para las fotos
 )

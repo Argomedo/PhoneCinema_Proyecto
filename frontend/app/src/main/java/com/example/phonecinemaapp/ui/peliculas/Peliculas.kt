@@ -2,6 +2,7 @@ package com.example.phonecinemaapp.data
 
 import com.example.phonecinemaapp.R
 import com.example.phonecinemaapp.ui.home.Pelicula
+import kotlin.collections.emptyList
 
 object PeliculaRepository {
 
