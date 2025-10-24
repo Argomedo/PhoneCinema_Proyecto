@@ -3,7 +3,6 @@ package com.example.phonecinemaapp.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -16,19 +15,22 @@ import java.util.Locale
 
 class FotoPerfil(private val context: Context) {
 
+    // Crear archivo temporal para la imagen
     fun crearArchivoImagen(): File {
         val timestamp = SimpleDateFormat("ssmmHH_ddMMyyyy", Locale.getDefault()).format(Date())
-        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val storageDir = context.getExternalFilesDir("Fotos")
         return File.createTempFile(
-            "JPEG_${timestamp}_",
+            "JPEG_${timestamp}",
             ".jpeg",
             storageDir
         ).apply {
+            // Si el directorio de imágenes no existe, se crea aquí
             parentFile?.mkdirs()
         }
     }
 
-    fun consigueImagenUri(file: File): Uri {
+    // NUEVO: Obtener URI segura para el archivo usando FileProvider
+    fun ConsigueImagenUri(file: File): Uri {
         return FileProvider.getUriForFile(
             context,
             "${context.packageName}.fileprovider",
@@ -36,22 +38,25 @@ class FotoPerfil(private val context: Context) {
         )
     }
 
-    fun consigueFotoCamara(imageUri: Uri): Intent {
+    // NUEVO: Intent para abrir la cámara
+    fun ConsigueFotoCamara(imageUri: Uri): Intent {
         return Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
             putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
             addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         }
     }
 
-    fun consigueFotoGaleria(): Intent {
+    // NUEVO: Intent para abrir la galería
+    fun ConsigueFotoGaleria(): Intent {
         return Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-            type = "image/*"
+            type = "image"
         }
     }
 }
 
+// NUEVO: Función de composición para recordar la instancia de FotoPerfil
 @Composable
-fun recuerdaFotos(): FotoPerfil {
+fun RecuerdaFotos(): FotoPerfil {
     val context = LocalContext.current
     return remember { FotoPerfil(context) }
 }

@@ -10,13 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// NUEVO: Estado actualizado con campos para foto y mensajes
 data class PerfilUiState(
     val id: Long = 0L,
     val nombre: String = "",
     val email: String = "",
-    val fotoUrl: String = "",
+    val fotoUri: String = "", // NUEVO: para almacenar la URI de la foto
     val isLoggedOut: Boolean = false,
-    val errorMensaje: String? = null
+    val errorMensaje: String? = null,
+    val successMensaje: String? = null // NUEVO: para mensajes de éxito
 )
 
 class PerfilViewModel(
@@ -34,7 +36,8 @@ class PerfilViewModel(
                     it.copy(
                         id = user.id,
                         nombre = user.name,
-                        email = user.email
+                        email = user.email,
+                        fotoUri = user.photousuario // NUEVO: cargar la foto existente del usuario
                     )
                 }
             } else {
@@ -51,6 +54,16 @@ class PerfilViewModel(
         _uiState.update { it.copy(email = newEmail) }
     }
 
+    // NUEVO: Función para actualizar la foto del perfil
+    fun onFotoChange(newFotoUri: String) {
+        _uiState.update {
+            it.copy(
+                fotoUri = newFotoUri,
+                successMensaje = "Foto actualizada correctamente"
+            )
+        }
+    }
+
     fun guardarCambios() {
         viewModelScope.launch {
             val state = _uiState.value
@@ -58,15 +71,32 @@ class PerfilViewModel(
                 val existingUser = userRepository.getUserByEmail(state.email)
                 val passwordToKeep = existingUser?.password ?: ""
 
+                // NUEVO: Incluir la foto al actualizar el usuario
                 val updated = UserEntity(
                     id = state.id,
                     name = state.nombre,
                     email = state.email,
-                    password = passwordToKeep
+                    password = passwordToKeep,
+                    photousuario = state.fotoUri // NUEVO: guardar la URI de la foto
                 )
                 userRepository.updateUser(updated)
-                _uiState.update { it.copy(errorMensaje = "Datos guardados correctamente") }
+                _uiState.update {
+                    it.copy(
+                        successMensaje = "Datos guardados correctamente",
+                        errorMensaje = null
+                    )
+                }
             }
+        }
+    }
+
+    // NUEVO: Función para limpiar mensajes de error y éxito
+    fun clearMessages() {
+        _uiState.update {
+            it.copy(
+                errorMensaje = null,
+                successMensaje = null
+            )
         }
     }
 
