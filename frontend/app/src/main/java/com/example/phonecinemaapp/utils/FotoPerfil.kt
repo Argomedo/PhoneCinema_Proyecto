@@ -38,20 +38,7 @@ class FotoPerfil(private val context: Context) {
         )
     }
 
-    // NUEVO: Intent para abrir la cámara
-    fun ConsigueFotoCamara(imageUri: Uri): Intent {
-        return Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-            putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        }
-    }
 
-    // NUEVO: Intent para abrir la galería
-    fun ConsigueFotoGaleria(): Intent {
-        return Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-            type = "image"
-        }
-    }
 }
 
 // NUEVO: Función de composición para recordar la instancia de FotoPerfil
