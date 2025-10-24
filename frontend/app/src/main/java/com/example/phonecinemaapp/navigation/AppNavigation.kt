@@ -1,6 +1,6 @@
 package com.example.phonecinemaapp.navigation
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.example.phonecinemaapp.data.local.database.AppDatabase
 import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.ui.home.HomeScreen
 import com.example.phonecinemaapp.ui.login.LoginScreen
 import com.example.phonecinemaapp.ui.login.LoginViewModel
@@ -22,9 +23,9 @@ import com.example.phonecinemaapp.ui.registro.RegistroViewModel
 import com.example.phonecinemaapp.ui.registro.RegistroViewModelFactory
 import com.example.phonecinemaapp.ui.reseñas.ReviewScreen
 import com.example.phonecinemaapp.ui.reseñas.ReviewViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.example.phonecinemaapp.ui.reseñas.ReviewViewModelFactory
+import com.example.phonecinemaapp.ui.roles.AdminScreen
+import com.example.phonecinemaapp.ui.roles.ModeradorScreen
 
 @Composable
 fun AppNavigation() {
@@ -34,6 +35,34 @@ fun AppNavigation() {
     val database = AppDatabase.getInstance(context)
     val userRepository = UserRepository(database.userDao())
     val reviewRepository = ReviewRepository(database.reviewDao())
+
+
+    // BLOQUE NUEVO: Inserta usuarios Admin y Moderador si no existen
+
+    LaunchedEffect(Unit) {
+        val admin = userRepository.getUserByEmail("admin@phonecinema.com")
+        val mod = userRepository.getUserByEmail("mod@phonecinema.com")
+
+        if (admin == null) {
+            userRepository.insertUser(
+                name = "Administrador",
+                email = "admin@phonecinema.com",
+                password = "Admin123!",
+                role = "Admin"
+            )
+        }
+
+        if (mod == null) {
+            userRepository.insertUser(
+                name = "Moderador",
+                email = "mod@phonecinema.com",
+                password = "Mod123!",
+                role = "Moderador"
+            )
+        }
+    }
+
+
 
     NavHost(
         navController = navController,
@@ -45,8 +74,11 @@ fun AppNavigation() {
             LoginScreen(
                 loginViewModel = loginViewModel,
                 onLoginExitoso = {
-                    navController.navigate(AppScreens.HomeScreen.route) {
-                        popUpTo(AppScreens.LoginScreen.route) { inclusive = true }
+                    val user = UserSession.currentUser
+                    when (user?.role) {
+                        "Admin" -> navController.navigate(AppScreens.AdminScreen.route)
+                        "Moderador" -> navController.navigate(AppScreens.ModeradorScreen.route)
+                        else -> navController.navigate(AppScreens.HomeScreen.route)
                     }
                 },
                 onNavigateToRegistro = {
@@ -64,6 +96,7 @@ fun AppNavigation() {
             )
         }
 
+        // --- Pantalla Usuario ---
         composable(AppScreens.HomeScreen.route) {
             HomeScreen(
                 onLogout = {
@@ -80,24 +113,42 @@ fun AppNavigation() {
             )
         }
 
+        // --- Pantalla Admin ---
+        composable(AppScreens.AdminScreen.route) {
+            AdminScreen(
+                onLogout = {
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // --- Pantalla Moderador ---
+        composable(AppScreens.ModeradorScreen.route) {
+            ModeradorScreen(
+                onLogout = {
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(
             route = AppScreens.ReviewScreen.route,
             arguments = listOf(navArgument("movieId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val context = LocalContext.current
-            val database = AppDatabase.getInstance(context)
-            val reviewRepo = ReviewRepository(database.reviewDao())
-            val factory = ReviewViewModelFactory(reviewRepo)
+            val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
+            val factory = ReviewViewModelFactory(reviewRepository)
             val reviewViewModel: ReviewViewModel = viewModel(factory = factory)
 
-            val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
             ReviewScreen(
                 movieId = movieId,
                 onBackClick = { navController.popBackStack() },
-                onNavigateToProfile = { navController.navigate(AppScreens.PerfilScreen.route) },
+                onNavigateToProfile = { navController.navigate(AppScreens.PerfilScreen.route) }
             )
         }
-
 
         composable(AppScreens.PerfilScreen.route) {
             PerfilScreen(
@@ -120,4 +171,6 @@ sealed class AppScreens(val route: String) {
     object ReviewScreen : AppScreens("review_screen/{movieId}") {
         fun createRoute(movieId: Int) = "review_screen/$movieId"
     }
+    object AdminScreen : AppScreens("admin_screen")
+    object ModeradorScreen : AppScreens("moderador_screen")
 }
