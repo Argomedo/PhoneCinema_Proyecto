@@ -72,24 +72,30 @@ private fun RegistroContent(
         Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium, color = Color.White)
         Spacer(modifier = Modifier.height(24.dp))
 
+        // --- Campo: Nombre ---
         OutlinedTextField(
             value = nombre,
             onValueChange = onNombreChange,
             label = { Text("Nombre completo") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error?.contains("nombre", ignoreCase = true) == true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
+        // --- Campo: Correo ---
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
             label = { Text("Correo electrónico") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error?.contains("correo", ignoreCase = true) == true ||
+                    error?.contains("email", ignoreCase = true) == true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
+        // --- Campo: Contraseña ---
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
@@ -104,10 +110,12 @@ private fun RegistroContent(
                 }
             },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error?.contains("contraseña", ignoreCase = true) == true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
+        // --- Campo: Confirmar contraseña ---
         OutlinedTextField(
             value = confirm,
             onValueChange = onConfirmChange,
@@ -122,9 +130,11 @@ private fun RegistroContent(
                 }
             },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error?.contains("coinciden", ignoreCase = true) == true
         )
 
+        // --- Mensaje general ---
         error?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
@@ -134,7 +144,10 @@ private fun RegistroContent(
 
         Button(
             onClick = onRegisterClick,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            enabled = error == null || error.isBlank()
         ) {
             Text("Registrar")
         }

@@ -1,59 +1,29 @@
 package com.example.phonecinemaapp.ui.home
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.phonecinemaapp.R
 import com.example.phonecinemaapp.data.session.UserSession
-import kotlinx.coroutines.launch
 
-// Ya no necesitamos los modelos de datos ni el ViewModel aquí.
-// Solo importamos lo necesario para la UI.
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
@@ -62,96 +32,76 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
 
-    // Mostrar nombre dinámico en la barra o menú
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.surface,  // ← evita el fondo azul
-                drawerTonalElevation = 8.dp
-            ) {
-                Text(
-                    text = "Bienvenido, ${uiState.nombreUsuario}",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-                HorizontalDivider()
-
-                NavigationDrawerItem(
-                    label = { Text("Inicio") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Perfil") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.close()
-                            kotlinx.coroutines.delay(250)
-                            onNavigateToProfile()
-                        }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.close()
-                            kotlinx.coroutines.delay(250)
-                            onLogout()
-                        }
-                    }
-                )
+    // Filtrado simple de películas
+    val filteredCategorias = uiState.categorias.map { categoria ->
+        categoria.copy(
+            peliculas = categoria.peliculas.filter {
+                it.nombre.contains(searchQuery, ignoreCase = true)
             }
-        },
-        content = {
-            HomeScreenContent(
-                uiState = uiState,
-                onMovieClick = onNavigateToMovieDetails,
-                onMenuClick = { scope.launch { drawerState.open() } }
-            )
-        }
-    )
+        )
+    }.filter { it.peliculas.isNotEmpty() || searchQuery.isBlank() }
 
     LaunchedEffect(Unit) {
         val user = UserSession.currentUser
         if (user != null) homeViewModel.loadUser(user.name)
     }
 
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeScreenContent(
-    uiState: HomeUiState,
-    onMovieClick: (Int) -> Unit,
-    onMenuClick: () -> Unit
-) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Películas")
+                    if (!isSearching) {
+                        Text("Catálogo", color = Color.White)
+                    } else {
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Buscar película...") },
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = Color.White,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedPlaceholderColor = Color.White.copy(alpha = 0.7f),
+                                unfocusedPlaceholderColor = Color.White.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFFD4A106),
                     titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
-                navigationIcon = {
-                    IconButton(onClick = onMenuClick) {
+                actions = {
+                    IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(
-                            imageVector = Icons.Default.Menu, // Mantenemos Menu aquí
-                            contentDescription = "Abrir menú de navegación"
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Buscar película",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Perfil",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = onLogout) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Cerrar sesión",
+                            tint = Color.White
                         )
                     }
                 }
@@ -164,8 +114,7 @@ fun HomeScreenContent(
                 .padding(innerPadding),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            // El resto del contenido
-            items(uiState.categorias) { categoria ->
+            items(filteredCategorias) { categoria ->
                 Text(
                     text = categoria.nombre,
                     style = MaterialTheme.typography.titleLarge,
@@ -175,12 +124,11 @@ fun HomeScreenContent(
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp)
-
                 ) {
                     items(categoria.peliculas) { pelicula ->
                         PeliculaItem(
                             pelicula = pelicula,
-                            onMovieClick = { onMovieClick(pelicula.id) }
+                            onMovieClick = { onNavigateToMovieDetails(pelicula.id) }
                         )
                     }
                 }
@@ -225,42 +173,4 @@ fun PeliculaItem(
             overflow = TextOverflow.Ellipsis
         )
     }
-}
-
-// LAS PREVIEWS SE QUEDAN AQUÍ, EN EL ARCHIVO DE LA UI
-
-@Preview(showBackground = true)
-@Composable
-fun PeliculaItemPreview() {
-    val peliculaDeEjemplo = Pelicula(1, "Película de Acción Súper Larga", R.drawable.ic_logo)
-    PeliculaItem(pelicula = peliculaDeEjemplo, onMovieClick = {})
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun HomeScreenContentPreview() {
-    val peliculasEjemplo = List(8) { Pelicula(it, "Película ${it + 1}", R.drawable.ic_logo) }
-    val categoriasEjemplo = listOf(
-        Categoria("Acción", peliculasEjemplo),
-        Categoria("Comedia", peliculasEjemplo.subList(0, 4))
-    )
-    val uiStateEjemplo = HomeUiState(categorias = categoriasEjemplo, nombreUsuario = "PreviewUser")
-
-    HomeScreenContent(
-        uiState = uiStateEjemplo,
-        onMovieClick = {},
-        onMenuClick = {}
-    )
-}
-
-// Preview del HomeScreen completo con drawer
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun HomeScreenPreview() {
-    // Para el preview, necesitarías un ViewModel mock o usar remember
-    HomeScreen(
-        onLogout = {},
-        onNavigateToMovieDetails = {},
-        onNavigateToProfile = {}
-    )
 }

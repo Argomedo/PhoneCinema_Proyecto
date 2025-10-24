@@ -5,39 +5,28 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-
-//Hice el top bar denuevo para acodar a las nuevas funciones
-//Pero falta el buscador
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.phonecinemaapp.navigation.AppScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopBar(
     title: String,
-    showBackButton: Boolean = false, // Para decidir si muestras la flecha
-    onBackClick: () -> Unit = {}, // Acción para la flecha
-    onMenuClick: () -> Unit,
-    onProfileClick: () -> Unit,
+    navController: NavController,
+    showBackButton: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onMenuClick: () -> Unit = {},
     onLogoutClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     TopAppBar(
-        title = {
-            Text(
-                text = title, // Título dinámico
-                color = colors.onPrimary
-            )
-        },
+        title = { Text(text = title, color = colors.onPrimary) },
         navigationIcon = {
-            // Lógica para mostrar flecha o menú
             if (showBackButton) {
                 IconButton(onClick = onBackClick) {
                     Icon(
@@ -50,20 +39,28 @@ fun AppTopBar(
                 IconButton(onClick = onMenuClick) {
                     Icon(
                         imageVector = Icons.Default.Menu,
-                        contentDescription = "Abrir menú",
+                        contentDescription = "Menú",
                         tint = colors.onPrimary
                     )
                 }
             }
         },
         actions = {
-            IconButton(onClick = onProfileClick){
+            IconButton(onClick = {
+                if (currentRoute != AppScreens.PerfilScreen.route) {
+                    navController.navigate(AppScreens.PerfilScreen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Perfil de usuario",
+                    contentDescription = "Perfil",
                     tint = colors.onPrimary
                 )
             }
+
             IconButton(onClick = onLogoutClick) {
                 Icon(
                     imageVector = Icons.Default.Logout,

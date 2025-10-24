@@ -69,6 +69,15 @@ dependencies {
     // Imágenes y utilidades
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    //Camara
+    implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
+    //Galeria
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
