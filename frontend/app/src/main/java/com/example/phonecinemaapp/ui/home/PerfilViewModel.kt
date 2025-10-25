@@ -78,7 +78,7 @@ class PerfilViewModel(
 
                 userRepository.updateUser(actualizado)
 
-                // 🔥 Actualiza la sesión global para reflejar los nuevos datos
+                // Actualiza la sesión global para reflejar los nuevos datos
                 UserSession.currentUser = actualizado
 
                 currentUser = actualizado

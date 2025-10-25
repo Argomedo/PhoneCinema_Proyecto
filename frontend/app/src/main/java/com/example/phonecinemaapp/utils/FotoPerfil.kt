@@ -1,9 +1,7 @@
 package com.example.phonecinemaapp.utils
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -29,7 +27,7 @@ class FotoPerfil(private val context: Context) {
         }
     }
 
-    // NUEVO: Obtener URI segura para el archivo usando FileProvider
+    // Obtener URI segura para el archivo usando FileProvider
     fun ConsigueImagenUri(file: File): Uri {
         return FileProvider.getUriForFile(
             context,
@@ -41,7 +39,7 @@ class FotoPerfil(private val context: Context) {
 
 }
 
-// NUEVO: Función de composición para recordar la instancia de FotoPerfil
+//Función de composición para recordar la instancia de FotoPerfil
 @Composable
 fun RecuerdaFotos(): FotoPerfil {
     val context = LocalContext.current

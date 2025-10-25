@@ -78,10 +78,10 @@ fun PerfilScreen(
         uiState = uiState,
         onBackClick = onBackClick,
         onSave = perfilViewModel::guardarCambios,
-        onNombreChange = perfilViewModel::onNombreChange,
-        onEmailChange = perfilViewModel::onEmailChange,
-        onFotoChange = perfilViewModel::onFotoChange, // NUEVO: callback para cambiar foto
-        onClearMessages = perfilViewModel::clearMessages, // NUEVO: para limpiar mensajes
+        onNombreChange = perfilViewModel::onNombreChange, //callback para cambiar nombre
+        onEmailChange = perfilViewModel::onEmailChange, //callback para cambiar correo
+        onFotoChange = perfilViewModel::onFotoChange, //callback para cambiar foto
+        onClearMessages = perfilViewModel::clearMessages, //para limpiar mensajes
         onLogout = perfilViewModel::logout
     )
 }
@@ -92,21 +92,21 @@ fun PerfilContent(
     uiState: PerfilUiState,
     onBackClick: () -> Unit,
     onSave: () -> Unit,
-    onNombreChange: (String) -> Unit,
-    onEmailChange: (String) -> Unit,
-    onFotoChange: (String) -> Unit, // NUEVO: parámetro para cambiar foto
-    onClearMessages: () -> Unit, // NUEVO: parámetro para limpiar mensajes
+    onNombreChange: (String) -> Unit, //parametro para cambio de nombre
+    onEmailChange: (String) -> Unit, //parametro para cambio de correo
+    onFotoChange: (String) -> Unit, //parámetro para cambiar foto
+    onClearMessages: () -> Unit, //parámetro para limpiar mensajes
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    // NUEVO: utilitario de fotos
+    //utilitario de fotos
     val fotoPerfil = RecuerdaFotos()
 
-    // NUEVO: estados para manejar archivos temporales y diálogos
+    //estados para manejar archivos temporales y diálogos
     var tempImageFile by remember { mutableStateOf<File?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    // NUEVO: Launcher para la cámara
+    //Launcher para la cámara
     val camaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -119,7 +119,7 @@ fun PerfilContent(
         tempImageFile = null
     }
 
-    // NUEVO: Launcher para la galería
+    //Launcher para la galería
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -128,7 +128,7 @@ fun PerfilContent(
         }
     }
 
-    // NUEVO: Launcher para permisos de cámara
+    //Launcher para permisos de cámara
     val camaraPermisionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -141,7 +141,7 @@ fun PerfilContent(
         }
     }
 
-    // NUEVO: Limpiar mensajes automáticamente después de 3 segundos
+    //Limpiar mensajes automáticamente después de 3 segundos
     LaunchedEffect(uiState.errorMensaje, uiState.successMensaje) {
         if (uiState.errorMensaje != null || uiState.successMensaje != null) {
             delay(3000)
@@ -178,7 +178,7 @@ fun PerfilContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campos existentes
+            // Campos de Nombre y Correo
             OutlinedTextField(
                 value = uiState.nombre,
                 onValueChange = onNombreChange,
@@ -193,7 +193,7 @@ fun PerfilContent(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // NUEVO: Mostrar mensajes de error
+            //Mostrar mensajes de error
             uiState.errorMensaje?.let { mensaje ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -203,7 +203,7 @@ fun PerfilContent(
                 )
             }
 
-            // NUEVO: Mostrar mensajes de éxito
+            //Mostrar mensajes de éxito
             uiState.successMensaje?.let { mensaje ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -235,7 +235,7 @@ fun PerfilContent(
         }
     }
 
-    // NUEVO: Diálogo para seleccionar fuente de imagen (cámara o galería)
+    //Diálogo para seleccionar fuente de imagen (cámara o galería)
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },

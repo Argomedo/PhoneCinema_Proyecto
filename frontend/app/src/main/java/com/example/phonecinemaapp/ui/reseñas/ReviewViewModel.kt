@@ -48,7 +48,7 @@ class ReviewViewModel(
                     movieId = movieId,
                     userId = usuario.id,
                     userName = usuario.name,
-                    fotoUsuario = usuario.photousuario,
+                    fotoUsuario = usuario.photousuario, //Agregado esto para la foto
                     rating = _uiState.value.currentRating.toFloat(),
                     comment = _uiState.value.currentReviewText
                 )

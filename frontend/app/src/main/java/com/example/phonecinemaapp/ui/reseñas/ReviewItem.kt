@@ -39,7 +39,7 @@ fun ReviewItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) { //Para poner la foto en la review
                     if (review.fotoUsuario.isNotEmpty()) {
                         AsyncImage(
                             model = review.fotoUsuario,
@@ -49,7 +49,7 @@ fun ReviewItem(
                                 .size(40.dp)
                                 .clip(CircleShape)
                         )
-                    } else {
+                    } else { //sino hay foto se pone una default
                         Icon(
                             Icons.Default.Person,
                             contentDescription = "Usuario",

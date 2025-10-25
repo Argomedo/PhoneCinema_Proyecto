@@ -138,7 +138,7 @@ fun MovieHeader(pelicula: Pelicula) {
 }
 
 @Composable
-fun ReviewInputSection(
+fun ReviewInputSection( //Seccion para hacer el review
     rating: Int,
     reviewText: String,
     onRatingChange: (Int) -> Unit,

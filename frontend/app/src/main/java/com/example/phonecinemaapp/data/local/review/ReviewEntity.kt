@@ -21,8 +21,8 @@ data class ReviewEntity(
     val id: Long = 0L,
     val movieId: Int,
     val userId: Long,
-    val userName: String,        // Faltaba este campo
-    val fotoUsuario: String = "",
+    val userName: String,        // Faltaba actualizar este campo
+    val fotoUsuario: String = "", //capo nuevo para las fotos
     val rating: Float,
     val comment: String,
     val timestamp: Long = System.currentTimeMillis()
