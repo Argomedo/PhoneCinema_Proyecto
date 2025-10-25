@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import com.example.phonecinemaapp.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,12 +39,30 @@ class ReviewViewModel(
         }
     }
 
-    fun addReview(review: ReviewEntity) {
+    // --- Modificado para usar el usuario activo ---
+    fun addReview(movieId: Int) {
         viewModelScope.launch {
-            reviewRepository.addReview(review)
-            val updated = reviewRepository.getReviewsForMovie(review.movieId)
-            _uiState.update {
-                it.copy(reviews = updated, currentRating = 0, currentReviewText = "")
+            val usuario = UserSession.currentUser
+            if (usuario != null) {
+                val nuevaReview = ReviewEntity(
+                    movieId = movieId,
+                    userId = usuario.id,
+                    userName = usuario.name,
+                    fotoUsuario = usuario.photousuario,
+                    rating = _uiState.value.currentRating.toFloat(),
+                    comment = _uiState.value.currentReviewText
+                )
+
+                reviewRepository.addReview(nuevaReview)
+
+                val updated = reviewRepository.getReviewsForMovie(movieId)
+                _uiState.update {
+                    it.copy(
+                        reviews = updated,
+                        currentRating = 0,
+                        currentReviewText = ""
+                    )
+                }
             }
         }
     }

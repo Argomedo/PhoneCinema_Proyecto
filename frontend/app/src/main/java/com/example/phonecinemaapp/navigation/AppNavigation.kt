@@ -151,7 +151,9 @@ fun AppNavigation() {
         }
 
         composable(AppScreens.PerfilScreen.route) {
+            val userEmail = UserSession.currentUser?.email ?: ""
             PerfilScreen(
+                userEmail = userEmail,
                 onBackClick = { navController.popBackStack() },
                 onLogout = {
                     navController.navigate(AppScreens.LoginScreen.route) {

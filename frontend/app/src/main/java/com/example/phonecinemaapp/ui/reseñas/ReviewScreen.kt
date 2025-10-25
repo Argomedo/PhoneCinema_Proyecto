@@ -20,9 +20,7 @@ import com.example.phonecinemaapp.data.PeliculaRepository
 import com.example.phonecinemaapp.data.local.database.AppDatabase
 import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import com.example.phonecinemaapp.data.repository.ReviewRepository
-import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.ui.home.Pelicula
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,11 +36,10 @@ fun ReviewScreen(
 
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
-    val scope = rememberCoroutineScope()
 
+    // cargar reseñas solo una vez por película
     LaunchedEffect(movieId) {
-        val reviews = reviewRepo.getReviewsForMovie(movieId)
-        reviewViewModel.setReviews(reviews)
+        reviewViewModel.loadReviews(movieId)
     }
 
     if (pelicula == null) {
@@ -69,29 +66,18 @@ fun ReviewScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             MovieHeader(pelicula)
 
+            // sección de input
             ReviewInputSection(
                 rating = uiState.currentRating,
                 reviewText = uiState.currentReviewText,
                 onRatingChange = reviewViewModel::setRating,
                 onReviewTextChange = reviewViewModel::setReviewText,
                 onSubmitReview = {
-                    val newReview = ReviewEntity(
-                        id = 0,
-                        movieId = pelicula.id,
-                        userId = UserSession.currentUser?.id ?: 1L, // usuario local o fijo
-                        userName = UserSession.currentUser?.name ?: "Usuario",
-                        rating = uiState.currentRating.toFloat(),
-                        comment = uiState.currentReviewText,
-                        timestamp = System.currentTimeMillis()
-                    )
-                    scope.launch {
-                        reviewRepo.addReview(newReview)
-                        val updatedReviews = reviewRepo.getReviewsForMovie(pelicula.id)
-                        reviewViewModel.setReviews(updatedReviews)
-                    }
+                    reviewViewModel.addReview(pelicula.id)
                 }
             )
 
+            // lista de reseñas
             ReviewsList(reviews = uiState.reviews)
         }
     }
@@ -111,7 +97,6 @@ fun MovieHeader(pelicula: Pelicula) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen a la izquierda
             androidx.compose.foundation.Image(
                 painter = androidx.compose.ui.res.painterResource(id = pelicula.posterResId),
                 contentDescription = pelicula.nombre,
@@ -122,7 +107,6 @@ fun MovieHeader(pelicula: Pelicula) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Texto a la derecha
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = pelicula.nombre,
@@ -132,7 +116,6 @@ fun MovieHeader(pelicula: Pelicula) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Línea de metadatos: género • duración • año
                 Text(
                     text = listOfNotNull(
                         pelicula.genero.takeIf { it.isNotBlank() },
@@ -140,7 +123,7 @@ fun MovieHeader(pelicula: Pelicula) {
                         pelicula.año.takeIf { it != 0 }?.toString()
                     ).joinToString(" • "),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White
+                    color = Color.Gray
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -153,9 +136,6 @@ fun MovieHeader(pelicula: Pelicula) {
         }
     }
 }
-
-
-
 
 @Composable
 fun ReviewInputSection(

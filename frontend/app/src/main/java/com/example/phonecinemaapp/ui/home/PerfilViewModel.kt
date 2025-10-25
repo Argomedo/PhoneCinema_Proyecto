@@ -4,21 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.local.user.UserEntity
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// NUEVO: Estado actualizado con campos para foto y mensajes
 data class PerfilUiState(
     val id: Long = 0L,
     val nombre: String = "",
     val email: String = "",
-    val fotoUri: String = "", // NUEVO: para almacenar la URI de la foto
+    val fotoUri: String = "",
     val isLoggedOut: Boolean = false,
     val errorMensaje: String? = null,
-    val successMensaje: String? = null // NUEVO: para mensajes de éxito
+    val successMensaje: String? = null
 )
 
 class PerfilViewModel(
@@ -28,16 +28,19 @@ class PerfilViewModel(
     private val _uiState = MutableStateFlow(PerfilUiState())
     val uiState: StateFlow<PerfilUiState> = _uiState.asStateFlow()
 
+    private var currentUser: UserEntity? = null
+
     fun cargarUsuario(email: String) {
         viewModelScope.launch {
             val user = userRepository.getUserByEmail(email)
             if (user != null) {
+                currentUser = user
                 _uiState.update {
                     it.copy(
                         id = user.id,
                         nombre = user.name,
                         email = user.email,
-                        fotoUri = user.photousuario // NUEVO: cargar la foto existente del usuario
+                        fotoUri = user.photousuario
                     )
                 }
             } else {
@@ -54,7 +57,6 @@ class PerfilViewModel(
         _uiState.update { it.copy(email = newEmail) }
     }
 
-    // NUEVO: Función para actualizar la foto del perfil
     fun onFotoChange(newFotoUri: String) {
         _uiState.update {
             it.copy(
@@ -66,37 +68,40 @@ class PerfilViewModel(
 
     fun guardarCambios() {
         viewModelScope.launch {
-            val state = _uiState.value
-            if (state.id != 0L) {
-                val existingUser = userRepository.getUserByEmail(state.email)
-                val passwordToKeep = existingUser?.password ?: ""
-
-                // NUEVO: Incluir la foto al actualizar el usuario
-                val updated = UserEntity(
-                    id = state.id,
-                    name = state.nombre,
-                    email = state.email,
-                    password = passwordToKeep,
-                    photousuario = state.fotoUri // NUEVO: guardar la URI de la foto
+            val usuarioActual = currentUser
+            if (usuarioActual != null) {
+                val actualizado = usuarioActual.copy(
+                    name = _uiState.value.nombre,
+                    email = _uiState.value.email,
+                    photousuario = _uiState.value.fotoUri
                 )
-                userRepository.updateUser(updated)
+
+                userRepository.updateUser(actualizado)
+
+                // 🔥 Actualiza la sesión global para reflejar los nuevos datos
+                UserSession.currentUser = actualizado
+
+                currentUser = actualizado
                 _uiState.update {
                     it.copy(
                         successMensaje = "Datos guardados correctamente",
                         errorMensaje = null
                     )
                 }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        errorMensaje = "No hay usuario cargado",
+                        successMensaje = null
+                    )
+                }
             }
         }
     }
 
-    // NUEVO: Función para limpiar mensajes de error y éxito
     fun clearMessages() {
         _uiState.update {
-            it.copy(
-                errorMensaje = null,
-                successMensaje = null
-            )
+            it.copy(errorMensaje = null, successMensaje = null)
         }
     }
 

@@ -51,4 +51,14 @@ class UserRepository(
     suspend fun getUserByEmail(email: String): UserEntity? {
         return userDao.getByEmail(email)
     }
+
+    // --- ACTUALIZAR FOTO DE PERFIL ---
+    suspend fun actualizarFotoUsuario(email: String, nuevaFotoUri: String) {
+        val user = userDao.getByEmail(email)
+        if (user != null) {
+            val actualizado = user.copy(photousuario = nuevaFotoUri)
+            userDao.update(actualizado)
+        }
+    }
+
 }

@@ -33,29 +33,53 @@ fun ReviewItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // --- Usuario y fecha ---
+            // --- Usuario (izquierda) y fecha (derecha) ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (review.fotoUsuario.isNotEmpty()) {
+                        AsyncImage(
+                            model = review.fotoUsuario,
+                            contentDescription = "Foto de ${review.userName}",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Usuario",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape),
+                            tint = Color.White
+                        )
+                    }
 
-                if(!review.fotoUsuario.isNullOrEmpty()){
-                    AsyncImage(
-                        model = review.fotoUsuario,
-                        contentDescription = "Foto de ${review.userName}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = review.userName.ifBlank { "Usuario" },
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
-                } else {
-                    Icon(Icons.Default.Person,
-                        contentDescription = "Usuario", modifier = Modifier.size(32.dp))
                 }
+
+                // Fecha al lado derecho
+                Text(
+                    text = formatDate(review.timestamp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White
+                )
             }
 
-            // --- Estrellas ---
             Spacer(modifier = Modifier.height(8.dp))
+
+            // --- Estrellas ---
             Row {
                 repeat(5) { i ->
                     Icon(
@@ -67,15 +91,19 @@ fun ReviewItem(
                 }
             }
 
-            // --- Comentario ---
             Spacer(modifier = Modifier.height(12.dp))
-            Text(review.comment)
+
+            // --- Comentario ---
+            Text(
+                text = review.comment,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
 
 private fun formatDate(timestamp: Long): String {
     val date = Date(timestamp)
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     return format.format(date)
 }

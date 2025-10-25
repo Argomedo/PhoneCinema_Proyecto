@@ -54,6 +54,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
+    userEmail: String,
     onBackClick: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -63,9 +64,10 @@ fun PerfilScreen(
     val perfilViewModel: PerfilViewModel = viewModel(factory = PerfilViewModelFactory(userRepository))
     val uiState by perfilViewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        perfilViewModel.cargarUsuario("test@test.com") // usuario simulado
+    LaunchedEffect(userEmail) {
+        perfilViewModel.cargarUsuario(userEmail)
     }
+
 
     if (uiState.isLoggedOut) {
         onLogout()
@@ -269,7 +271,7 @@ fun PerfilContent(
     }
 }
 
-// NUEVO: Componente para la sección de foto de perfil
+//CUADRDO PARA LA FOTO DE PERFIL
 @Composable
 fun SeccionFotoPerfil(
     fotoUri: String,
@@ -279,27 +281,26 @@ fun SeccionFotoPerfil(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // NUEVO: Mostrar la foto actual o un placeholder
-        if (fotoUri.isNotEmpty()) {
-            AsyncImage(
-                model = fotoUri,
-                contentDescription = "Foto de perfil",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-            )
-        } else {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray.copy(alpha = 0.3f))
-            ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(140.dp)
+                .clip(CircleShape)
+                .background(Color.Gray.copy(alpha = 0.15f))
+        ) {
+            if (fotoUri.isNotEmpty()) {
+                AsyncImage(
+                    model = fotoUri,
+                    contentDescription = "Foto de perfil",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(CircleShape)
+                )
+            } else {
                 Icon(
                     Icons.Default.CameraAlt,
-                    contentDescription = "Foto de perfil",
+                    contentDescription = "Agregar foto de perfil",
                     modifier = Modifier.size(48.dp),
                     tint = Color.Gray
                 )
