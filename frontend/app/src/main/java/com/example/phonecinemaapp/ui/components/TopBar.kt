@@ -8,11 +8,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.phonecinemaapp.navigation.AppScreens
@@ -27,18 +27,18 @@ fun AppTopBar(
     onMenuClick: () -> Unit = {},
     onLogoutClick: () -> Unit
 ) {
-    val colors = MaterialTheme.colorScheme
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val white = Color(0xFFFAFAFA)
 
     TopAppBar(
-        title = { Text(text = title, color = colors.onPrimary) },
+        title = { Text(text = title, color = white) },
         navigationIcon = {
             if (showBackButton) {
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Volver",
-                        tint = colors.onPrimary
+                        tint = white
                     )
                 }
             } else {
@@ -46,7 +46,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menú",
-                        tint = colors.onPrimary
+                        tint = white
                     )
                 }
             }
@@ -63,7 +63,7 @@ fun AppTopBar(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Perfil",
-                    tint = colors.onPrimary
+                    tint = white
                 )
             }
 
@@ -71,15 +71,15 @@ fun AppTopBar(
                 Icon(
                     imageVector = Icons.Default.Logout,
                     contentDescription = "Cerrar sesión",
-                    tint = colors.onPrimary
+                    tint = white
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colors.primary,
-            titleContentColor = colors.onPrimary,
-            navigationIconContentColor = colors.onPrimary,
-            actionIconContentColor = colors.onPrimary
+            containerColor = Color(0xFF253B76), // tu color azul principal
+            titleContentColor = white,
+            navigationIconContentColor = white,
+            actionIconContentColor = white
         )
     )
 }

@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,15 +12,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.phonecinemaapp.data.local.user.UserEntity
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.ui.components.AppTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageUsersScreen(
+    navController: NavController,
     userRepo: UserRepository,
-    onBack: () -> Unit
+    onBackClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var users by remember { mutableStateOf<List<UserEntity>>(emptyList()) }
@@ -34,14 +36,12 @@ fun ManageUsersScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Gestión de Usuarios") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
+            AppTopBar(
+                title = "Gestión de Usuarios",
+                navController = navController,
+                showBackButton = true,
+                onBackClick = onBackClick,
+                onLogoutClick = onLogoutClick
             )
         }
     ) { padding ->
@@ -52,7 +52,11 @@ fun ManageUsersScreen(
                 .fillMaxSize()
         ) {
             if (users.isEmpty()) {
-                Text("No hay usuarios registrados", color = Color(0xFFFAFAFA))
+                Text(
+                    text = "No hay usuarios registrados",
+                    color = Color(0xFFFAFAFA),
+                    style = MaterialTheme.typography.bodyMedium
+                )
             } else {
                 LazyColumn {
                     items(users) { user ->
@@ -93,7 +97,9 @@ fun UserCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF253B76).copy(alpha = 0.15f))
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF253B76).copy(alpha = 0.15f)
+        )
     ) {
         Row(
             modifier = Modifier
@@ -103,17 +109,37 @@ fun UserCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(user.name, color = Color.White, style = MaterialTheme.typography.titleMedium)
-                Text(user.email, color = Color(0xFFFFC107), style = MaterialTheme.typography.bodySmall)
-                Text("Rol: ${user.role}", color = Color.White)
+                Text(
+                    text = user.name,
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = user.email,
+                    color = Color(0xFFFFC107),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Rol: ${user.role}",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
             Row {
                 IconButton(onClick = onToggleRole) {
-                    Icon(Icons.Default.SwapHoriz, contentDescription = "Cambiar Rol", tint = Color(0xFFFFC107))
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = "Cambiar Rol",
+                        tint = Color(0xFFFFC107)
+                    )
                 }
                 IconButton(onClick = onBan) {
-                    Icon(Icons.Default.Block, contentDescription = "Banear", tint = Color.Red)
+                    Icon(
+                        imageVector = Icons.Default.Block,
+                        contentDescription = "Banear Usuario",
+                        tint = Color.Red
+                    )
                 }
             }
         }

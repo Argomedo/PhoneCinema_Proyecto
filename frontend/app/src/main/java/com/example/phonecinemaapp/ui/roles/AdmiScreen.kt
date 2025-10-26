@@ -1,32 +1,30 @@
 package com.example.phonecinemaapp.ui.roles
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.phonecinemaapp.ui.components.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(
+    navController: NavController,
     onNavigateToUsers: () -> Unit,
     onNavigateToReviews: () -> Unit,
+    onBackClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Panel del Administrador",
-                    color = Color(0xFFFAFAFA)) },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
+            AppTopBar(
+                title = "Panel del Administrador",
+                navController = navController,
+                showBackButton = true,
+                onBackClick = onBackClick,
+                onLogoutClick = onLogout
             )
         }
     ) { padding ->
@@ -40,7 +38,7 @@ fun AdminScreen(
             Text(
                 text = "Funciones del Administrador",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color(0xFF253B76)
+                color = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -48,11 +46,12 @@ fun AdminScreen(
             Button(
                 onClick = onNavigateToUsers,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
-            ) {
-                Text("Administrar Usuarios",
-                    color = Color(0xFF253B76)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
+            ) {
+                Text("Administrar Usuarios")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -60,12 +59,12 @@ fun AdminScreen(
             Button(
                 onClick = onNavigateToReviews,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
-            ) {
-                Text("Revisar / Eliminar Reseñas",
-                    color = Color(0xFF253B76)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-
+            ) {
+                Text("Revisar / Eliminar Reseñas")
             }
         }
     }
