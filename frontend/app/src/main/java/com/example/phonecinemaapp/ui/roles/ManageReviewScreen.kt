@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.phonecinemaapp.data.PeliculaRepository
 import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
@@ -61,6 +62,7 @@ fun ManageReviewsScreen(
                     items(reviews) { review ->
                         ReviewCard(
                             review = review,
+                            movieName = getMovieNameById(review.movieId),
                             onDelete = {
                                 scope.launch {
                                     reviewRepo.deleteReview(review)
@@ -75,9 +77,14 @@ fun ManageReviewsScreen(
     }
 }
 
+private fun getMovieNameById(movieId: Int): String {
+    return PeliculaRepository.getById(movieId)?.nombre ?: "Película #$movieId"
+}
+
 @Composable
 fun ReviewCard(
     review: ReviewEntity,
+    movieName: String,
     onDelete: () -> Unit
 ) {
     Card(
@@ -87,6 +94,14 @@ fun ReviewCard(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF253B76).copy(alpha = 0.15f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
+            Text(
+                text = "Película: $movieName",
+                color = Color(0xFFD4A106),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -122,6 +137,19 @@ fun ReviewCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+
+            Text(
+                text = "Fecha: ${formatDate(review.timestamp)}",
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
+}
+
+private fun formatDate(timestamp: Long): String {
+    val date = java.util.Date(timestamp)
+    val format = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+    return format.format(date)
 }

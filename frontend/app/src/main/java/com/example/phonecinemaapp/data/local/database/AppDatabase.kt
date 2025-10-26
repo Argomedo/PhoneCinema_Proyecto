@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserEntity::class, ReviewEntity::class],
-    version = 21, // sube versión para forzar recreación
+    version = 22,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -48,34 +48,39 @@ abstract class AppDatabase : RoomDatabase() {
         private val context: Context
     ) : RoomDatabase.Callback() {
 
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
+        override fun onOpen(db: SupportSQLiteDatabase) {
+            super.onOpen(db)
 
             CoroutineScope(Dispatchers.IO).launch {
                 val database = AppDatabase.getInstance(context)
                 val userDao = database.userDao()
 
-                userDao.insert(
-                    UserEntity(
-                        name = "Administrador",
-                        email = "admin@phonecinema.com",
-                        password = "Admin123!",
-                        role = "Admin"
+                // Inserta Admin si no existe
+                val admin = userDao.getByEmail("admin@phonecinema.com")
+                if (admin == null) {
+                    userDao.insert(
+                        UserEntity(
+                            name = "Administrador",
+                            email = "admin@phonecinema.com",
+                            password = "Admin123!",
+                            role = "Admin"
+                        )
                     )
-                )
+                }
 
-                userDao.insert(
-                    UserEntity(
-                        name = "Moderador",
-                        email = "mod@phonecinema.com",
-                        password = "Mod123!",
-                        role = "Moderador"
+                // Inserta Moderador si no existe
+                val mod = userDao.getByEmail("mod@phonecinema.com")
+                if (mod == null) {
+                    userDao.insert(
+                        UserEntity(
+                            name = "Moderador",
+                            email = "mod@phonecinema.com",
+                            password = "Mod123!",
+                            role = "Moderador"
+                        )
                     )
-                )
+                }
             }
         }
     }
 }
-
-
-
