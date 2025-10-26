@@ -1,5 +1,6 @@
 package com.example.phonecinemaapp.ui.roles
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -58,7 +59,9 @@ fun ManageUsersScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     items(users) { user ->
                         UserCard(
                             user = user,
@@ -96,50 +99,73 @@ fun UserCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF253B76).copy(alpha = 0.15f)
-        )
+            containerColor = Color(0xFF0E1A3B) // fondo azul oscuro
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f)) // borde dorado
     ) {
-        Row(
+        Column(
             modifier = Modifier
+                .padding(16.dp)
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text(
-                    text = user.name,
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = user.email,
-                    color = Color(0xFFFFC107),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "Rol: ${user.role}",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            // Datos principales del usuario
+            Text(
+                text = "Nombre: ${user.name}",
+                color = Color(0xFFFAFAFA),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
 
-            Row {
-                IconButton(onClick = onToggleRole) {
-                    Icon(
-                        imageVector = Icons.Default.SwapHoriz,
-                        contentDescription = "Cambiar Rol",
-                        tint = Color(0xFFFFC107)
-                    )
-                }
-                IconButton(onClick = onBan) {
-                    Icon(
-                        imageVector = Icons.Default.Block,
-                        contentDescription = "Banear Usuario",
-                        tint = Color.Red
-                    )
+            Text(
+                text = "Correo: ${user.email}",
+                color = Color(0xFFFFC107),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+
+            Text(
+                text = "Rol actual: ${user.role}",
+                color = Color(0xFFFAFAFA),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Divider(
+                color = Color(0xFFD4A106).copy(alpha = 0.4f),
+                thickness = 1.dp,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+
+            // Acciones
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Acciones del administrador",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Row {
+                    IconButton(onClick = onToggleRole) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = "Cambiar Rol",
+                            tint = Color(0xFFFFC107)
+                        )
+                    }
+                    IconButton(onClick = onBan) {
+                        Icon(
+                            imageVector = Icons.Default.Block,
+                            contentDescription = "Banear Usuario",
+                            tint = Color(0xFFB23A48)
+                        )
+                    }
                 }
             }
         }

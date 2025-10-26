@@ -1,5 +1,6 @@
 package com.example.phonecinemaapp.ui.roles
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -58,7 +59,9 @@ fun ManageReviewsScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     items(reviews) { review ->
                         ReviewCard(
                             review = review,
@@ -90,28 +93,39 @@ fun ReviewCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF253B76).copy(alpha = 0.15f))
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF0E1A3B) // Azul oscuro de fondo
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f)) // Borde dorado
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            // Película
             Text(
                 text = "Película: $movieName",
                 color = Color(0xFFD4A106),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(bottom = 4.dp)
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 6.dp)
             )
 
+            // Usuario, puntaje y eliminar
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
-                        text = review.userName,
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleMedium
+                        text = "Usuario: ${review.userName}",
+                        color = Color(0xFFFAFAFA),
+                        style = MaterialTheme.typography.titleSmall
                     )
                     Text(
                         text = "Puntaje: ${review.rating}/5",
@@ -122,27 +136,33 @@ fun ReviewCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        tint = Color.Red
+                        contentDescription = "Eliminar reseña",
+                        tint = Color(0xFFB23A48)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Divider(
+                color = Color(0xFFD4A106).copy(alpha = 0.4f),
+                thickness = 1.dp,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
 
+            // Comentario
             if (review.comment.isNotBlank()) {
                 Text(
-                    text = review.comment,
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "\"${review.comment}\"",
+                    color = Color(0xFFFAFAFA),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 6.dp)
                 )
             }
 
+            // Fecha
             Text(
                 text = "Fecha: ${formatDate(review.timestamp)}",
                 color = Color.Gray,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 4.dp)
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
