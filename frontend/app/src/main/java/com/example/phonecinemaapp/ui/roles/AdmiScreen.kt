@@ -19,13 +19,14 @@ fun AdminScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Panel del Administrador") },
+                title = { Text("Panel del Administrador",
+                    color = Color(0xFFFAFAFA)) },
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color.White)
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
             )
         }
     ) { padding ->
@@ -39,7 +40,7 @@ fun AdminScreen(
             Text(
                 text = "Funciones del Administrador",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White
+                color = Color(0xFF253B76)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -49,7 +50,9 @@ fun AdminScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
             ) {
-                Text("Administrar Usuarios", color = Color.White)
+                Text("Administrar Usuarios",
+                    color = Color(0xFF253B76)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -59,7 +62,10 @@ fun AdminScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
             ) {
-                Text("Revisar / Eliminar Reseñas", color = Color.White)
+                Text("Revisar / Eliminar Reseñas",
+                    color = Color(0xFF253B76)
+                )
+
             }
         }
     }

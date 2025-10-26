@@ -117,6 +117,6 @@ fun ReviewItem(
 
 private fun formatDate(timestamp: Long): String {
     val date = Date(timestamp)
-    val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     return format.format(date)
 }

@@ -18,13 +18,14 @@ fun ModeradorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Panel del Moderador") },
+                title = { Text("Panel del Moderador",
+                    color = Color(0xFFFAFAFA)) },
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color.White)
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
             )
         }
     ) { padding ->

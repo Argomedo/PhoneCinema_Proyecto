@@ -33,13 +33,14 @@ fun ManageReviewsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Reseñas") },
+                title = { Text("Gestión de Reseñas",
+                    color = Color (0xFFFAFAFA)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color(0xFFFAFAFA))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
             )
         }
     ) { padding ->
@@ -50,7 +51,7 @@ fun ManageReviewsScreen(
                 .fillMaxSize()
         ) {
             if (reviews.isEmpty()) {
-                Text("No hay reseñas disponibles", color = Color.White)
+                Text("No hay reseñas disponibles", color = Color(0xFFFAFAFA))
             } else {
                 LazyColumn {
                     items(reviews) { review ->

@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -126,7 +127,8 @@ private fun LoginContent(
             onClick = onLoginClick,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(50)
-        ) { Text("Entrar") }
+        ) { Text("Entrar",
+            color = Color(0xFF253B76)) }
 
         Spacer(modifier = Modifier.height(12.dp))
 

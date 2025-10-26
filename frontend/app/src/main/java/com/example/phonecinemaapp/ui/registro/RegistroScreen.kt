@@ -167,7 +167,8 @@ private fun RegistroContent(
                 .height(50.dp),
             enabled = error == null || error.isBlank()
         ) {
-            Text("Registrar")
+            Text("Registrar",
+                color = Color(0xFF253B76))
         }
 
         Spacer(modifier = Modifier.height(12.dp))

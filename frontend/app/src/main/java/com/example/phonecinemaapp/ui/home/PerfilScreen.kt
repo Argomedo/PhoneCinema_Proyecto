@@ -149,10 +149,11 @@ fun PerfilContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil") },
+                title = { Text("Perfil",
+                    color = Color(0xFFFAFAFA)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFAFAFA))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
@@ -204,14 +205,7 @@ fun PerfilContent(
             Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Guardar Cambios",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
-                        shadow = Shadow(
-                            color = Color.Black.copy(alpha = 0.8f),
-                            offset = Offset(1f, 1f),
-                            blurRadius = 2f
-                        )
-                    )
+                    color = Color(0xFF253B76)
                 )
             }
 
@@ -221,20 +215,13 @@ fun PerfilContent(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red,
+                    containerColor = Color(0xFFB23A48),
                     contentColor = Color.White
                 )
             ) {
                 Text(
                     text = "Cerrar Sesión",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
-                        shadow = Shadow(
-                            color = Color.Black.copy(alpha = 0.8f),
-                            offset = Offset(1f, 1f),
-                            blurRadius = 2f
-                        )
-                    )
+                    color = Color.White
                 )
             }
         }
@@ -260,7 +247,8 @@ fun PerfilContent(
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Galería", color = Color.White)
+                        Text("Galería",
+                            color = Color(0xFFFAFAFA))
                     }
 
                     Button(
@@ -272,7 +260,8 @@ fun PerfilContent(
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Cámara", color = Color.White)
+                        Text("Cámara",
+                            color = Color(0xFFFAFAFA))
                     }
                 }
             }
@@ -324,15 +313,7 @@ fun SeccionFotoPerfil(
         Button(onClick = onTakePhoto) {
             Text(
                 text = "Cambiar foto de perfil",
-                // MATERIALTHEME de Material 3
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.White,
-                    shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.8f),
-                        offset = Offset(1f, 1f),
-                        blurRadius = 2f
-                    )
-                )
+                color = Color(0xFF253B76)
             )
         }
     }

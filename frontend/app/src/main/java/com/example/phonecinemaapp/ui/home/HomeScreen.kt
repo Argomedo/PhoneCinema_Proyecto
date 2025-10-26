@@ -81,12 +81,12 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     if (!isSearching) {
-                        Text("Catálogo", color = Color.White)
+                        Text("Catálogo", color = Color(0xFFFAFAFA))
                     } else {
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Buscar película...") },
+                            placeholder = { Text("Buscar película") },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -96,8 +96,8 @@ fun HomeScreen(
                                 cursorColor = Color.White,
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedPlaceholderColor = Color.White.copy(alpha = 0.7f),
-                                unfocusedPlaceholderColor = Color.White.copy(alpha = 0.7f)
+                                focusedPlaceholderColor = Color.White.copy(alpha = 1f),
+                                unfocusedPlaceholderColor = Color.White.copy(alpha = 1f)
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -105,29 +105,29 @@ fun HomeScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFFD4A106),
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    titleContentColor = Color(0xFF253B76),
+                    actionIconContentColor = Color(0xFF253B76)
                 ),
                 actions = {
                     IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Buscar película",
-                            tint = Color.White
+                            tint = Color(0xFFFAFAFA)
                         )
                     }
                     IconButton(onClick = onNavigateToProfile) {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Perfil",
-                            tint = Color.White
+                            tint = Color(0xFFFAFAFA)
                         )
                     }
                     IconButton(onClick = onLogout) {
                         Icon(
                             imageVector = Icons.Default.Logout,
                             contentDescription = "Cerrar sesión",
-                            tint = Color.White
+                            tint = Color(0xFFB23A48)
                         )
                     }
                 }

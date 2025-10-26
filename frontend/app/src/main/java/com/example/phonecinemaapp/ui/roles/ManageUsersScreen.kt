@@ -41,7 +41,7 @@ fun ManageUsersScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
             )
         }
     ) { padding ->
@@ -52,7 +52,7 @@ fun ManageUsersScreen(
                 .fillMaxSize()
         ) {
             if (users.isEmpty()) {
-                Text("No hay usuarios registrados", color = Color.White)
+                Text("No hay usuarios registrados", color = Color(0xFFFAFAFA))
             } else {
                 LazyColumn {
                     items(users) { user ->
