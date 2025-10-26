@@ -54,7 +54,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.material:material-icons-extended-android")
 
     // ViewModel y Coroutines
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
@@ -64,6 +64,7 @@ dependencies {
     // Room con KSP
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.compose.foundation)
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Imágenes y utilidades

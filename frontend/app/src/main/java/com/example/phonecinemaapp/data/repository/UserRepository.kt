@@ -61,4 +61,15 @@ class UserRepository(
         }
     }
 
+    // --- OBTENER TODOS LOS USUARIOS ---
+    suspend fun getAllUsers(): List<UserEntity> {
+        return userDao.getAllUsers()
+    }
+
+    // --- ELIMINAR USUARIO ---
+    suspend fun deleteUser(user: UserEntity) {
+        userDao.delete(user)
+    }
+
+
 }

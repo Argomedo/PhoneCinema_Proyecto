@@ -1,10 +1,13 @@
 package com.example.phonecinemaapp.ui.perfil
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,7 +43,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -68,7 +74,6 @@ fun PerfilScreen(
         perfilViewModel.cargarUsuario(userEmail)
     }
 
-
     if (uiState.isLoggedOut) {
         onLogout()
         return
@@ -78,10 +83,10 @@ fun PerfilScreen(
         uiState = uiState,
         onBackClick = onBackClick,
         onSave = perfilViewModel::guardarCambios,
-        onNombreChange = perfilViewModel::onNombreChange, //callback para cambiar nombre
-        onEmailChange = perfilViewModel::onEmailChange, //callback para cambiar correo
-        onFotoChange = perfilViewModel::onFotoChange, //callback para cambiar foto
-        onClearMessages = perfilViewModel::clearMessages, //para limpiar mensajes
+        onNombreChange = perfilViewModel::onNombreChange,
+        onEmailChange = perfilViewModel::onEmailChange,
+        onFotoChange = perfilViewModel::onFotoChange,
+        onClearMessages = perfilViewModel::clearMessages,
         onLogout = perfilViewModel::logout
     )
 }
@@ -92,43 +97,36 @@ fun PerfilContent(
     uiState: PerfilUiState,
     onBackClick: () -> Unit,
     onSave: () -> Unit,
-    onNombreChange: (String) -> Unit, //parametro para cambio de nombre
-    onEmailChange: (String) -> Unit, //parametro para cambio de correo
-    onFotoChange: (String) -> Unit, //parámetro para cambiar foto
-    onClearMessages: () -> Unit, //parámetro para limpiar mensajes
+    onNombreChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onFotoChange: (String) -> Unit,
+    onClearMessages: () -> Unit,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    //utilitario de fotos
     val fotoPerfil = RecuerdaFotos()
 
-    //estados para manejar archivos temporales y diálogos
     var tempImageFile by remember { mutableStateOf<File?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    //Launcher para la cámara
     val camaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
             tempImageFile?.let { file ->
                 val uri = fotoPerfil.ConsigueImagenUri(file)
-                onFotoChange(uri.toString()) // NUEVO: guardar la nueva foto
+                onFotoChange(uri.toString())
             }
         }
         tempImageFile = null
     }
 
-    //Launcher para la galería
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let {
-            onFotoChange(it.toString()) // NUEVO: guardar la foto de galería
-        }
+        uri?.let { onFotoChange(it.toString()) }
     }
 
-    //Launcher para permisos de cámara
     val camaraPermisionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -141,7 +139,6 @@ fun PerfilContent(
         }
     }
 
-    //Limpiar mensajes automáticamente después de 3 segundos
     LaunchedEffect(uiState.errorMensaje, uiState.successMensaje) {
         if (uiState.errorMensaje != null || uiState.successMensaje != null) {
             delay(3000)
@@ -152,13 +149,14 @@ fun PerfilContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil") },
+                title = { Text("Perfil",
+                    color = Color(0xFFFAFAFA)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFAFAFA))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFD4A106))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
             )
         }
     ) { innerPadding ->
@@ -168,24 +166,22 @@ fun PerfilContent(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            // NUEVO: Sección de foto de perfil
             SeccionFotoPerfil(
                 fotoUri = uiState.fotoUri,
-                onTakePhoto = {
-                    showImageSourceDialog = true // NUEVO: mostrar diálogo de selección
-                }
+                onTakePhoto = { showImageSourceDialog = true }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campos de Nombre y Correo
             OutlinedTextField(
                 value = uiState.nombre,
                 onValueChange = onNombreChange,
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = onEmailChange,
@@ -193,85 +189,88 @@ fun PerfilContent(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //Mostrar mensajes de error
-            uiState.errorMensaje?.let { mensaje ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = mensaje,
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            val context = LocalContext.current
 
-            //Mostrar mensajes de éxito
-            uiState.successMensaje?.let { mensaje ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = mensaje,
-                    color = Color.Green,
-                    style = MaterialTheme.typography.bodySmall
-                )
+            LaunchedEffect(uiState.errorMensaje, uiState.successMensaje) {
+                uiState.errorMensaje?.let {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
+                uiState.successMensaje?.let {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Guardar Cambios")
+            Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Guardar Cambios",
+                    color = Color(0xFF253B76)
+                )
             }
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Button(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red,
+                    containerColor = Color(0xFFB23A48),
                     contentColor = Color.White
                 )
             ) {
-                Text("Cerrar Sesión")
+                Text(
+                    text = "Cerrar Sesión",
+                    color = Color.White
+                )
             }
         }
     }
 
-    //Diálogo para seleccionar fuente de imagen (cámara o galería)
+    // --- Diálogo para Cámara o Galería ---
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
-            title = { Text("Seleccionar imagen") },
-            text = { Text("¿De dónde quieres obtener la imagen?") },
+            title = { Text("Seleccionar imagen", color = Color.White) },
+            text = { Text("¿De dónde quieres obtener la imagen?", color = Color.White) },
             confirmButton = {
-                Button(
-                    onClick = {
-                        showImageSourceDialog = false
-                        // Solicitar permiso de cámara
-                        camaraPermisionLauncher.launch(android.Manifest.permission.CAMERA)
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cámara")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        showImageSourceDialog = false
-                        // Abrir galería
-                        galleryLauncher.launch("image/*")
+                    Button(
+                        onClick = {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch("image/*")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253B76))
+                    ) {
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Galería",
+                            color = Color(0xFFFAFAFA))
                     }
-                ) {
-                    Icon(Icons.Default.PhotoLibrary, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Galería")
+
+                    Button(
+                        onClick = {
+                            showImageSourceDialog = false
+                            camaraPermisionLauncher.launch(android.Manifest.permission.CAMERA)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253B76))
+                    ) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Cámara",
+                            color = Color(0xFFFAFAFA))
+                    }
                 }
             }
         )
     }
-}
+} // ← cierre correcto de PerfilContent
 
-//CUADRDO PARA LA FOTO DE PERFIL
+
+// --- Cuadro para la foto de perfil ---
 @Composable
 fun SeccionFotoPerfil(
     fotoUri: String,
@@ -286,9 +285,9 @@ fun SeccionFotoPerfil(
             modifier = Modifier
                 .size(140.dp)
                 .clip(CircleShape)
-                .background(Color.Gray.copy(alpha = 0.15f))
+                .background(Color(0xFF3949AB)) // azul más claro y visible
         ) {
-            if (fotoUri.isNotEmpty()) {
+            if (fotoUri.isNotBlank()) {
                 AsyncImage(
                     model = fotoUri,
                     contentDescription = "Foto de perfil",
@@ -298,19 +297,30 @@ fun SeccionFotoPerfil(
                         .clip(CircleShape)
                 )
             } else {
+                // ICONO DE PERSONA (Este componente ahora es de Material 3)
                 Icon(
-                    Icons.Default.CameraAlt,
-                    contentDescription = "Agregar foto de perfil",
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.Gray
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Avatar por defecto",
+                    tint = Color.White,
+                    modifier = Modifier.size(72.dp)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // BUTTON de Material 3
         Button(onClick = onTakePhoto) {
-            Text("Cambiar foto de perfil")
+            Text(
+                text = "Cambiar foto de perfil",
+                color = Color(0xFF253B76)
+            )
         }
     }
 }
+
+
+
+
+
+

@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserEntity::class, ReviewEntity::class],
-    version = 14, // sube versión para forzar recreación
+    version = 20, // sube versión para forzar recreación
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -50,17 +50,11 @@ abstract class AppDatabase : RoomDatabase() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            // Este callback se ejecuta una sola vez cuando la DB se crea
-            CoroutineScope(Dispatchers.IO).launch {
-                val database = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    DB_NAME
-                ).build()
 
+            CoroutineScope(Dispatchers.IO).launch {
+                val database = AppDatabase.getInstance(context)
                 val userDao = database.userDao()
 
-                // Insertar usuarios predeterminados
                 userDao.insert(
                     UserEntity(
                         name = "Administrador",
@@ -69,6 +63,7 @@ abstract class AppDatabase : RoomDatabase() {
                         role = "Admin"
                     )
                 )
+
                 userDao.insert(
                     UserEntity(
                         name = "Moderador",
@@ -77,9 +72,10 @@ abstract class AppDatabase : RoomDatabase() {
                         role = "Moderador"
                     )
                 )
-
-                database.close()
             }
         }
     }
 }
+
+
+
