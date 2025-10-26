@@ -13,6 +13,7 @@ runtime = "1.9.2"
 foundationLayout = "1.9.2"
 roomCommonJvm = "2.8.2"
 roomKtx = "2.8.2"
+foundation = "1.9.4"
 
 [libraries]
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version = "2.9.0" }
@@ -39,6 +40,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

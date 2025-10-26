@@ -193,12 +193,13 @@ fun ReviewInputSection(
         Button(
             onClick = onSubmitReview,
             modifier = Modifier.fillMaxWidth(),
-            enabled = rating > 0 && reviewText.isNotBlank()
+            enabled = rating > 0
         ) {
             Text("Publicar reseña")
         }
     }
 }
+
 
 @Composable
 fun ReviewsList(reviews: List<ReviewEntity>) {

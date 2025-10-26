@@ -1,6 +1,10 @@
 package com.example.phonecinemaapp.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MarqueeAnimationMode
+import androidx.compose.foundation.MarqueeSpacing
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -191,12 +195,22 @@ fun PeliculaItem(
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
+        @OptIn(ExperimentalFoundationApi::class)
         Text(
             text = pelicula.nombre,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Visible,
+            modifier = Modifier.basicMarquee(        // <- animación de desplazamiento
+                iterations = Int.MAX_VALUE,
+                animationMode = MarqueeAnimationMode.Immediately,
+                repeatDelayMillis = 0,     // sin pausa entre repeticiones
+                initialDelayMillis = 0,    // sin pausa inicial
+                spacing = MarqueeSpacing(15.dp),
+                velocity = 30.dp           // velocidad mas fluida
+            )
         )
+
     }
 }

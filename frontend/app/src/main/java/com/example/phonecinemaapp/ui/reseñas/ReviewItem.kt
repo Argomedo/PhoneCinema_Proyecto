@@ -107,10 +107,13 @@ fun ReviewItem(
             Spacer(modifier = Modifier.height(12.dp))
 
             // --- Comentario ---
-            Text(
-                text = review.comment,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if (review.comment.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = review.comment,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
