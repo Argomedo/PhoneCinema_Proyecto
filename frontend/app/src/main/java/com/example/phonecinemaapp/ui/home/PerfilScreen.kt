@@ -4,55 +4,27 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.phonecinemaapp.data.local.database.AppDatabase
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.utils.RecuerdaFotos
 import kotlinx.coroutines.delay
 import java.io.File
@@ -60,6 +32,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
+    navController: NavController,
     userEmail: String,
     onBackClick: () -> Unit,
     onLogout: () -> Unit
@@ -80,6 +53,7 @@ fun PerfilScreen(
     }
 
     PerfilContent(
+        navController = navController,
         uiState = uiState,
         onBackClick = onBackClick,
         onSave = perfilViewModel::guardarCambios,
@@ -94,6 +68,7 @@ fun PerfilScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilContent(
+    navController: NavController,
     uiState: PerfilUiState,
     onBackClick: () -> Unit,
     onSave: () -> Unit,
@@ -148,15 +123,12 @@ fun PerfilContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Perfil",
-                    color = Color(0xFFFAFAFA)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFAFAFA))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
+            AppTopBar(
+                title = "Perfil",
+                navController = navController,
+                showBackButton = true,
+                onBackClick = onBackClick,
+                onLogoutClick = onLogout
             )
         }
     ) { innerPadding ->
@@ -189,8 +161,6 @@ fun PerfilContent(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            val context = LocalContext.current
-
             LaunchedEffect(uiState.errorMensaje, uiState.successMensaje) {
                 uiState.errorMensaje?.let {
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -219,10 +189,7 @@ fun PerfilContent(
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    text = "Cerrar Sesión",
-                    color = Color.White
-                )
+                Text(text = "Cerrar Sesión", color = Color.White)
             }
         }
     }
@@ -247,8 +214,7 @@ fun PerfilContent(
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Galería",
-                            color = Color(0xFFFAFAFA))
+                        Text("Galería", color = Color(0xFFFAFAFA))
                     }
 
                     Button(
@@ -260,15 +226,13 @@ fun PerfilContent(
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Cámara",
-                            color = Color(0xFFFAFAFA))
+                        Text("Cámara", color = Color(0xFFFAFAFA))
                     }
                 }
             }
         )
     }
-} // ← cierre correcto de PerfilContent
-
+}
 
 // --- Cuadro para la foto de perfil ---
 @Composable
@@ -285,7 +249,7 @@ fun SeccionFotoPerfil(
             modifier = Modifier
                 .size(140.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF3949AB)) // azul más claro y visible
+                .background(Color(0xFF3949AB))
         ) {
             if (fotoUri.isNotBlank()) {
                 AsyncImage(
@@ -297,7 +261,6 @@ fun SeccionFotoPerfil(
                         .clip(CircleShape)
                 )
             } else {
-                // ICONO DE PERSONA (Este componente ahora es de Material 3)
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Avatar por defecto",
@@ -309,18 +272,8 @@ fun SeccionFotoPerfil(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // BUTTON de Material 3
         Button(onClick = onTakePhoto) {
-            Text(
-                text = "Cambiar foto de perfil",
-                color = Color(0xFF253B76)
-            )
+            Text(text = "Cambiar foto de perfil", color = Color(0xFF253B76))
         }
     }
 }
-
-
-
-
-
-

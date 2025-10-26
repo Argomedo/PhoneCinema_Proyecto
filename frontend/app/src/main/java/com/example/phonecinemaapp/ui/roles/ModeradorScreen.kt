@@ -1,31 +1,29 @@
 package com.example.phonecinemaapp.ui.roles
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.phonecinemaapp.ui.components.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModeradorScreen(
+    navController: NavController,
     onNavigateToReviews: () -> Unit,
-    onLogout: () -> Unit
+    onBackClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Panel del Moderador",
-                    color = Color(0xFFFAFAFA)) },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC107))
+            AppTopBar(
+                title = "Panel del Moderador",
+                navController = navController,
+                showBackButton = true,
+                onBackClick = onBackClick,
+                onLogoutClick = onLogoutClick
             )
         }
     ) { padding ->
@@ -39,7 +37,7 @@ fun ModeradorScreen(
             Text(
                 text = "Funciones del Moderador",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -47,9 +45,12 @@ fun ModeradorScreen(
             Button(
                 onClick = onNavigateToReviews,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
             ) {
-                Text("Revisar / Eliminar Reseñas", color = Color.White)
+                Text("Revisar / Eliminar Reseñas")
             }
         }
     }
