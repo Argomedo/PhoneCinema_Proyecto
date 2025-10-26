@@ -3,6 +3,7 @@ package com.example.phonecinemaapp.ui.registro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinemaapp.domain.validation.validateRegisterFields // importa tu validator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,37 +28,65 @@ class RegistroViewModel(
 
     // --- Actualización de campos con validación inmediata ---
     fun onNameChange(value: String) {
-        _uiState.update { it.copy(nombre = value, errorMensaje = validarCampos(it.copy(nombre = value))) }
-    }
-
-    fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, errorMensaje = validarCampos(it.copy(email = value))) }
-    }
-
-    fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(contrasena = value, errorMensaje = validarCampos(it.copy(contrasena = value))) }
-    }
-
-    fun onConfirmPasswordChange(value: String) {
-        _uiState.update { it.copy(confirmarContrasena = value, errorMensaje = validarCampos(it.copy(confirmarContrasena = value))) }
-    }
-
-    // --- Validación completa de los campos ---
-    private fun validarCampos(s: RegistroUiState): String? {
-        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-
-        return when {
-            s.nombre.length < 3 -> "El nombre debe tener al menos 3 caracteres"
-            !emailRegex.matches(s.email) -> "Ingrese un correo válido"
-            s.contrasena.length < 6 -> "La contraseña debe tener mínimo 6 caracteres"
-            s.contrasena != s.confirmarContrasena -> "Las contraseñas no coinciden"
-            else -> null
+        _uiState.update {
+            it.copy(
+                nombre = value,
+                errorMensaje = validateRegisterFields(
+                    it.copy(nombre = value).nombre,
+                    it.email,
+                    it.contrasena,
+                    it.confirmarContrasena
+                )
+            )
         }
     }
 
+    fun onEmailChange(value: String) {
+        _uiState.update {
+            it.copy(
+                email = value,
+                errorMensaje = validateRegisterFields(
+                    it.nombre,
+                    it.copy(email = value).email,
+                    it.contrasena,
+                    it.confirmarContrasena
+                )
+            )
+        }
+    }
+
+    fun onPasswordChange(value: String) {
+        _uiState.update {
+            it.copy(
+                contrasena = value,
+                errorMensaje = validateRegisterFields(
+                    it.nombre,
+                    it.email,
+                    it.copy(contrasena = value).contrasena,
+                    it.confirmarContrasena
+                )
+            )
+        }
+    }
+
+    fun onConfirmPasswordChange(value: String) {
+        _uiState.update {
+            it.copy(
+                confirmarContrasena = value,
+                errorMensaje = validateRegisterFields(
+                    it.nombre,
+                    it.email,
+                    it.contrasena,
+                    it.copy(confirmarContrasena = value).confirmarContrasena
+                )
+            )
+        }
+    }
+
+    // --- Registro del usuario ---
     fun registrarUsuario() {
         val s = _uiState.value
-        val error = validarCampos(s)
+        val error = validateRegisterFields(s.nombre, s.email, s.contrasena, s.confirmarContrasena)
 
         if (error != null) {
             _uiState.update { it.copy(errorMensaje = error) }
