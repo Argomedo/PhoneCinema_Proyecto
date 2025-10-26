@@ -1,6 +1,7 @@
 package com.example.phonecinemaapp.data.local.user
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -17,4 +18,11 @@ interface UserDao {
 
     @Update
     suspend fun update(user: UserEntity)
+
+    @Query("SELECT * FROM users ORDER BY name ASC")
+    suspend fun getAllUsers(): List<UserEntity>
+
+    @Delete
+    suspend fun delete(user: UserEntity)
+
 }

@@ -11,55 +11,56 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminScreen(onLogout: () -> Unit) {
+fun AdminScreen(
+    onNavigateToUsers: () -> Unit,
+    onNavigateToReviews: () -> Unit,
+    onLogout: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Panel de Administrador") },
+                title = { Text("Panel del Administrador") },
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión")
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
             )
         }
     ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top
         ) {
             Text(
-                "Funciones del Administrador",
+                text = "Funciones del Administrador",
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White
             )
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* gestionar usuarios */ },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Administrar Usuarios", color = Color.White) }
+                onClick = onNavigateToUsers,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
+            ) {
+                Text("Administrar Usuarios", color = Color.White)
+            }
 
-
-            Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = { /* asignar roles */ },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Asignar Roles", color = Color.White) }
-
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { /* eliminar reseñas */ },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Revisar / Eliminar Reseñas", color = Color.White) }
+                onClick = onNavigateToReviews,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
+            ) {
+                Text("Revisar / Eliminar Reseñas", color = Color.White)
+            }
         }
     }
 }

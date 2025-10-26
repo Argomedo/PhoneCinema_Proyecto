@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserEntity::class, ReviewEntity::class],
-    version = 14, // sube versión para forzar recreación
+    version = 17, // sube versión para forzar recreación
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

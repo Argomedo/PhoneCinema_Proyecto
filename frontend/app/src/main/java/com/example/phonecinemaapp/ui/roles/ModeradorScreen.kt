@@ -6,50 +6,50 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModeradorScreen(onLogout: () -> Unit) {
+fun ModeradorScreen(
+    onNavigateToReviews: () -> Unit,
+    onLogout: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Panel de Moderador") },
+                title = { Text("Panel del Moderador") },
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión")
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF253B76))
             )
         }
     ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top
         ) {
             Text(
-                "Funciones del Moderador",
-                style = MaterialTheme.typography.titleLarge
+                text = "Funciones del Moderador",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White
             )
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* eliminar reseñas inapropiadas */ },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Eliminar Reseñas Inapropiadas") }
-
-            Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = { /* revisar reportes */ },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Revisar Reportes") }
+                onClick = onNavigateToReviews,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
+            ) {
+                Text("Revisar / Eliminar Reseñas", color = Color.White)
+            }
         }
     }
 }
