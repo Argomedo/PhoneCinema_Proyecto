@@ -1,17 +1,9 @@
 ------*Cosas Faltantes*------
 
--Hacer Animaciones 
-  (Una al abrir una pelicula)
-  (Nose donde puede ir la otra)
-
--Integracion de API Nativa
-  (Camara)
-  (Galeria)
-
--Diferentes roles de Usuarios
-  (Normal)
-  (Moderador)
-  (Administrador)
+-Habilidad de Añadir Peliculas
+-Poner Reseñas en perfil de usuario para ver cuantas tiene
+-Rediseñar Front de Perfil de Usuario
+-Diferentes acciones dependiendo de Rol (Si faltan algunas añadir abajo)
 
 -----*Cosas Terminadas*-----
 
@@ -21,3 +13,5 @@
 -Apartamiento de reseñas
 -Base de datos que almacene las reseñas y los registros de usuario
 -Menu base del usuario
+-Integracion de APIs Nativas
+-Roles en el sistema (Admin, Mod, Usuario)
