@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.phonecinemaapp"        // ✅ Corrigido
+    namespace = "com.example.phonecinemaapp"        // ✅ Corregido
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.phonecinemaapp" // ✅ Corrigido
+        applicationId = "com.example.phonecinemaapp" // ✅ Corregido
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -87,4 +87,17 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Retrofit base
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+
+    // Convertidor JSON con Gson
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Cliente HTTP
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Interceptor de logs (para ver requests/responses)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
 }
