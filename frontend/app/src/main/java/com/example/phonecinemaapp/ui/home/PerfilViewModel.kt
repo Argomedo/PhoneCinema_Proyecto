@@ -3,6 +3,7 @@ package com.example.phonecinemaapp.ui.perfil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,11 +19,13 @@ data class PerfilUiState(
     val fotoUri: String = "",
     val isLoggedOut: Boolean = false,
     val errorMensaje: String? = null,
-    val successMensaje: String? = null
+    val successMensaje: String? = null,
+    val userReviews: List<com.example.phonecinemaapp.data.local.review.ReviewEntity> = emptyList()
 )
 
 class PerfilViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val reviewRepository: ReviewRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PerfilUiState())
@@ -45,6 +48,18 @@ class PerfilViewModel(
                 }
             } else {
                 _uiState.update { it.copy(errorMensaje = "Usuario no encontrado") }
+            }
+        }
+    }
+
+    fun cargarResenasUsuario(userEmail: String) {
+        viewModelScope.launch {
+            try {
+                val allReviews = reviewRepository.getAllReviews()
+                val userReviews = allReviews.filter { it.userName == currentUser?.name }
+                _uiState.update { it.copy(userReviews = userReviews) }
+            } catch (e: Exception) {
+                // Manejar error silenciosamente
             }
         }
     }
@@ -78,7 +93,6 @@ class PerfilViewModel(
 
                 userRepository.updateUser(actualizado)
 
-                // Actualiza la sesión global para reflejar los nuevos datos
                 UserSession.currentUser = actualizado
 
                 currentUser = actualizado
@@ -94,6 +108,50 @@ class PerfilViewModel(
                         errorMensaje = "No hay usuario cargado",
                         successMensaje = null
                     )
+                }
+            }
+        }
+    }
+
+    fun cambiarPassword(nuevaPassword: String, confirmacion: String) {
+        viewModelScope.launch {
+            try {
+                val usuarioActual = currentUser
+                if (usuarioActual != null) {
+                    if (nuevaPassword != confirmacion) {
+                        _uiState.update {
+                            it.copy(errorMensaje = "Las contraseñas no coinciden")
+                        }
+                        return@launch
+                    }
+
+                    if (nuevaPassword.length < 6) {
+                        _uiState.update {
+                            it.copy(errorMensaje = "La contraseña debe tener al menos 6 caracteres")
+                        }
+                        return@launch
+                    }
+
+                    val usuarioActualizado = usuarioActual.copy(password = nuevaPassword)
+                    userRepository.updateUser(usuarioActualizado)
+
+                    UserSession.currentUser = usuarioActualizado
+                    currentUser = usuarioActualizado
+
+                    _uiState.update {
+                        it.copy(
+                            successMensaje = "Contraseña actualizada correctamente",
+                            errorMensaje = null
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(errorMensaje = "No hay usuario cargado")
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(errorMensaje = "Error al cambiar la contraseña: ${e.message}")
                 }
             }
         }
