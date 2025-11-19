@@ -55,9 +55,12 @@ class PerfilViewModel(
     fun cargarResenasUsuario(userEmail: String) {
         viewModelScope.launch {
             try {
-                val allReviews = reviewRepository.getAllReviews()
-                val userReviews = allReviews.filter { it.userName == currentUser?.name }
-                _uiState.update { it.copy(userReviews = userReviews) }
+                val usuarioActual = userRepository.getUserByEmail(userEmail)
+                if (usuarioActual != null) {
+                    val allReviews = reviewRepository.getAllReviews()
+                    val userReviews = allReviews.filter { it.userId == usuarioActual.id }
+                    _uiState.update { it.copy(userReviews = userReviews) }
+                }
             } catch (e: Exception) {
                 // Manejar error silenciosamente
             }

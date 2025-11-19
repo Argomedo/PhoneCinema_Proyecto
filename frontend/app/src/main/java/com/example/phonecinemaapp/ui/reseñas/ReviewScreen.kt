@@ -39,6 +39,13 @@ fun ReviewScreen(
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
 
+    // NUEVO → Calcular calificación general
+    val calificacionGeneral by remember(uiState.reviews) {
+        derivedStateOf {
+            calcularCalificacionGeneral(uiState.reviews)
+        }
+    }
+
     LaunchedEffect(movieId) {
         reviewViewModel.loadReviews(movieId)
     }
@@ -60,7 +67,12 @@ fun ReviewScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            MovieHeader(pelicula)
+            // NUEVO → Pasar calificación general al header
+            MovieHeader(
+                pelicula = pelicula,
+                calificacionGeneral = calificacionGeneral,
+                totalResenas = uiState.reviews.size
+            )
 
             ReviewInputSection(
                 rating = uiState.currentRating,
@@ -77,8 +89,20 @@ fun ReviewScreen(
     }
 }
 
+//Función para calcular calificación general
+private fun calcularCalificacionGeneral(reviews: List<ReviewEntity>): Float {
+    if (reviews.isEmpty()) return 0f
+    val suma = reviews.sumOf { it.rating.toDouble() }
+    return (suma / reviews.size).toFloat()
+}
+
+//MovieHeader actualizado con calificación general
 @Composable
-fun MovieHeader(pelicula: Pelicula) {
+fun MovieHeader(
+    pelicula: Pelicula,
+    calificacionGeneral: Float,
+    totalResenas: Int
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,6 +134,39 @@ fun MovieHeader(pelicula: Pelicula) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
+                // NUEVO → Mostrar calificación general
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Mostrar estrellas de la calificación general
+                    for (i in 1..5) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (i <= calificacionGeneral) Color(0xFFFFC107) else Color.Gray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "%.1f".format(calificacionGeneral),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "(${totalResenas} ${if (totalResenas == 1) "reseña" else "reseñas"})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
                     text = listOfNotNull(
                         pelicula.genero.takeIf { it.isNotBlank() },
@@ -132,7 +189,7 @@ fun MovieHeader(pelicula: Pelicula) {
 }
 
 @Composable
-fun ReviewInputSection( //Seccion para hacer el review
+fun ReviewInputSection(
     rating: Int,
     reviewText: String,
     onRatingChange: (Int) -> Unit,

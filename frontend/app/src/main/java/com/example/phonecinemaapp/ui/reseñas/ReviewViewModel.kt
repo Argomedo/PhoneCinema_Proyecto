@@ -39,7 +39,6 @@ class ReviewViewModel(
         }
     }
 
-    // --- Modificado para usar el usuario activo ---
     fun addReview(movieId: Int) {
         viewModelScope.launch {
             val usuario = UserSession.currentUser
@@ -48,7 +47,7 @@ class ReviewViewModel(
                     movieId = movieId,
                     userId = usuario.id,
                     userName = usuario.name,
-                    fotoUsuario = usuario.photousuario, //Agregado esto para la foto
+                    fotoUsuario = usuario.photousuario,
                     rating = _uiState.value.currentRating.toFloat(),
                     comment = _uiState.value.currentReviewText
                 )
