@@ -1,4 +1,4 @@
-package com.example.phonecinemaapp.ui.reseñas
+package com.example.phonecinemaapp.ui.resenas
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row

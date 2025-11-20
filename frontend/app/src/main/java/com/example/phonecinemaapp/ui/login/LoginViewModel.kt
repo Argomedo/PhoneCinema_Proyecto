@@ -3,8 +3,9 @@ package com.example.phonecinemaapp.ui.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.data.repository.UserRepository
-import com.example.phonecinemaapp.data.session.UserSession       // ← Import necesario
+import com.example.phonecinemaapp.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,14 +20,12 @@ data class LoginUiState(
 )
 
 class LoginViewModel(
+    private val authRepository: AuthRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
-    var currentUser: UserEntity? = null
-        private set
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, errorMsg = null) }
@@ -38,28 +37,32 @@ class LoginViewModel(
 
     fun iniciarSesion() {
         val state = _uiState.value
+
         if (state.email.isBlank() || state.contrasena.isBlank()) {
             _uiState.update { it.copy(errorMsg = "Debes completar todos los campos") }
             return
         }
 
-        viewModelScope.launch {
-            val result = userRepository.login(state.email, state.contrasena)
-            if (result.isSuccess) {
-                currentUser = result.getOrNull()
+        // Login directo sin backend
+        if (state.email == "admin@phonecinema.com" && state.contrasena == "Admin123!") {
 
-                // === NUEVO BLOQUE: guarda el usuario en la sesión global ===
-                UserSession.currentUser = currentUser
-                // ===========================================================
+            UserSession.currentUser = UserEntity(
+                id = 1,
+                name = "Administrador",
+                email = state.email,
+                password = state.contrasena,
+                photousuario = "",
+                role = "Admin"
+            )
 
-                _uiState.update { it.copy(loginExitoso = true, errorMsg = null) }
-            } else {
-                _uiState.update {
-                    it.copy(errorMsg = result.exceptionOrNull()?.message ?: "Error al iniciar sesión")
-                }
-            }
+            _uiState.update { it.copy(loginExitoso = true) }
+            return
         }
+
+        // Si no coincide, marcar error inmediato
+        _uiState.update { it.copy(errorMsg = "Credenciales incorrectas") }
     }
+
 
     fun clearLoginResult() {
         _uiState.update { it.copy(loginExitoso = false, errorMsg = null) }

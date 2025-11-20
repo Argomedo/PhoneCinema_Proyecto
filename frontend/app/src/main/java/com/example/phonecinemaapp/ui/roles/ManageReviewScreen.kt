@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.phonecinema.data.dto.ReviewDto
+import com.example.phonecinema.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.PeliculaRepository
-import com.example.phonecinemaapp.data.local.review.ReviewEntity
-import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import kotlinx.coroutines.launch
 
@@ -28,11 +28,15 @@ fun ManageReviewsScreen(
     onLogoutClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var reviews by remember { mutableStateOf<List<ReviewEntity>>(emptyList()) }
+    var reviews by remember { mutableStateOf<List<ReviewDto>>(emptyList()) }
 
-    // Cargar reseñas al abrir
+    // cargar reseñas del microservicio
     LaunchedEffect(Unit) {
-        reviews = reviewRepo.getAllReviews()
+        reviews = try {
+            reviewRepo.getAllReviews()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     Scaffold(
@@ -52,23 +56,22 @@ fun ManageReviewsScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+
             if (reviews.isEmpty()) {
                 Text(
                     text = "No hay reseñas disponibles",
-                    color = Color(0xFFFAFAFA),
+                    color = Color.White,
                     style = MaterialTheme.typography.bodyMedium
                 )
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(reviews) { review ->
                         ReviewCard(
                             review = review,
-                            movieName = getMovieNameById(review.movieId),
+                            movieName = getMovieNameById(review.movieId.toInt()),
                             onDelete = {
                                 scope.launch {
-                                    reviewRepo.deleteReview(review)
+                                    reviewRepo.deleteReview(review.id!!)
                                     reviews = reviews.filter { it.id != review.id }
                                 }
                             }
@@ -86,7 +89,7 @@ private fun getMovieNameById(movieId: Int): String {
 
 @Composable
 fun ReviewCard(
-    review: ReviewEntity,
+    review: ReviewDto,
     movieName: String,
     onDelete: () -> Unit
 ) {
@@ -95,37 +98,35 @@ fun ReviewCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0E1A3B) // Azul oscuro de fondo
+            containerColor = Color(0xFF0E1A3B)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f)) // Borde dorado
+        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f))
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            // Película
+
             Text(
                 text = "Película: $movieName",
                 color = Color(0xFFD4A106),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 6.dp)
+                style = MaterialTheme.typography.titleMedium
             )
 
-            // Usuario, puntaje y eliminar
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
                     Text(
-                        text = "Usuario: ${review.userName}",
-                        color = Color(0xFFFAFAFA),
-                        style = MaterialTheme.typography.titleSmall
+                        text = "Usuario ID: ${review.userId}",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodySmall
                     )
                     Text(
                         text = "Puntaje: ${review.rating}/5",
@@ -133,6 +134,7 @@ fun ReviewCard(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -142,34 +144,13 @@ fun ReviewCard(
                 }
             }
 
-            Divider(
-                color = Color(0xFFD4A106).copy(alpha = 0.4f),
-                thickness = 1.dp,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // Comentario
-            if (review.comment.isNotBlank()) {
-                Text(
-                    text = "\"${review.comment}\"",
-                    color = Color(0xFFFAFAFA),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 6.dp)
-                )
-            }
-
-            // Fecha
             Text(
-                text = "Fecha: ${formatDate(review.timestamp)}",
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodySmall
+                text = "\"${review.comment}\"",
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
-}
-
-private fun formatDate(timestamp: Long): String {
-    val date = java.util.Date(timestamp)
-    val format = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
-    return format.format(date)
 }

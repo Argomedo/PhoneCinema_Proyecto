@@ -4,17 +4,42 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Reviews
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,11 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.phonecinemaapp.data.local.database.AppDatabase
-import com.example.phonecinemaapp.data.repository.ReviewRepository
-import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
-import com.example.phonecinemaapp.ui.reseñas.ReviewItem
 import com.example.phonecinemaapp.utils.RecuerdaFotos
 import kotlinx.coroutines.delay
 import java.io.File
@@ -40,23 +61,16 @@ import java.io.File
 @Composable
 fun PerfilScreen(
     navController: NavController,
-    userEmail: String,
+    userId: Long,
+    perfilViewModel: PerfilViewModel,
     onBackClick: () -> Unit,
     onLogout: () -> Unit
 ) {
-    val context = LocalContext.current
-    val database = AppDatabase.getInstance(context)
-    val userRepository = remember { UserRepository(database.userDao()) }
-    val reviewRepository = remember { ReviewRepository(database.reviewDao()) }
-
-    val perfilViewModel: PerfilViewModel = viewModel(
-        factory = PerfilViewModelFactory(userRepository, reviewRepository)
-    )
     val uiState by perfilViewModel.uiState.collectAsState()
 
-    LaunchedEffect(userEmail) {
-        perfilViewModel.cargarUsuario(userEmail)
-        perfilViewModel.cargarResenasUsuario(userEmail)
+    LaunchedEffect(userId) {
+        perfilViewModel.cargarUsuario(userId)
+        perfilViewModel.cargarResenasUsuario(userId)
     }
 
     if (uiState.isLoggedOut) {
@@ -211,52 +225,37 @@ fun PerfilContent(
                 }
             }
 
+            // Sección de "Mis Reseñas" sin usar Room ni listas locales
             item {
-                if (uiState.userReviews.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Mis Reseñas",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = "Total: ${uiState.userReviews.size}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Divider(
-                            modifier = Modifier.fillMaxWidth()
+                        Text(
+                            text = "Mis Reseñas",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            }
 
-            if (uiState.userReviews.isNotEmpty()) {
-                items(uiState.userReviews) { review ->
-                    ReviewItem(
-                        review = review,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Divider(
+                        modifier = Modifier.fillMaxWidth()
                     )
-                }
-            } else {
-                item {
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(32.dp),
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(

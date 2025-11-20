@@ -1,4 +1,4 @@
-package com.example.phonecinemaapp.ui.reseñas
+package com.example.phonecinemaapp.ui.resenas
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,15 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.phonecinemaapp.data.PeliculaRepository
-import com.example.phonecinemaapp.data.local.database.AppDatabase
-import com.example.phonecinemaapp.data.local.review.ReviewEntity
-import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.ui.home.Pelicula
 
@@ -29,13 +25,9 @@ fun ReviewScreen(
     navController: NavController,
     movieId: Int,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    reviewViewModel: ReviewViewModel = viewModel()   // <- ViewModel inyectado, sin Room aquí
 ) {
-    val context = LocalContext.current
-    val db = remember { AppDatabase.getInstance(context) }
-    val reviewRepo = remember { ReviewRepository(db.reviewDao()) }
-    val reviewViewModel: ReviewViewModel = viewModel(factory = ReviewViewModelFactory(reviewRepo))
-
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
 
@@ -132,7 +124,7 @@ fun MovieHeader(pelicula: Pelicula) {
 }
 
 @Composable
-fun ReviewInputSection( //Seccion para hacer el review
+fun ReviewInputSection(
     rating: Int,
     reviewText: String,
     onRatingChange: (Int) -> Unit,
@@ -173,10 +165,19 @@ fun ReviewInputSection( //Seccion para hacer el review
 }
 
 @Composable
-fun ReviewsList(reviews: List<ReviewEntity>) {
+fun ReviewsList(reviews: List<ReviewUi>) {
     LazyColumn {
         items(reviews) { review ->
-            ReviewItem(review = review)
+            ReviewItem(
+                review = ReviewUi(
+                    userName = review.userName,
+                    rating = review.rating.toInt(),
+                    comment = review.comment,
+                    timestamp = review.timestamp,
+                    fotoUsuario = review.fotoUsuario
+                )
+            )
         }
     }
 }
+
