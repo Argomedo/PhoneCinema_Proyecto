@@ -1,26 +1,30 @@
-package com.example.phonecinemaapp.data.repository
+package com.example.phonecinema.data.repository
 
-import com.example.phonecinemaapp.data.local.review.ReviewDao
-import com.example.phonecinemaapp.data.local.review.ReviewEntity
+import ReviewApi
+import com.example.phonecinema.data.dto.ReviewDto
+import com.example.phonecinema.data.remote.RemoteModule
 
-class ReviewRepository(
-    private val reviewDao: ReviewDao
-) {
-    // Reseñas por película
-    suspend fun getReviewsForMovie(movieId: Int): List<ReviewEntity> =
-        reviewDao.getReviewsForMovie(movieId)
+class ReviewRepository(reviewApi: ReviewApi) {
 
-    // Todas las reseñas (para Admin / Moderador)
-    suspend fun getAllReviews(): List<ReviewEntity> =
-        reviewDao.getAllReviews()
+    private val api = RemoteModule.create(ReviewApi::class.java)
 
-    // Agregar reseña
-    suspend fun addReview(review: ReviewEntity) {
-        reviewDao.insert(review)
+    // Reseñas por película (usuario normal)
+    suspend fun getReviews(movieId: Long): List<ReviewDto> {
+        return api.getByMovie(movieId)
+    }
+
+    // Crear reseña
+    suspend fun createReview(review: ReviewDto): ReviewDto {
+        return api.create(review)
+    }
+
+    // Todas las reseñas (Admin/Moderador)
+    suspend fun getAllReviews(): List<ReviewDto> {
+        return api.getAll()
     }
 
     // Eliminar reseña
-    suspend fun deleteReview(review: ReviewEntity) {
-        reviewDao.delete(review)
+    suspend fun deleteReview(id: Long) {
+        api.delete(id)
     }
 }

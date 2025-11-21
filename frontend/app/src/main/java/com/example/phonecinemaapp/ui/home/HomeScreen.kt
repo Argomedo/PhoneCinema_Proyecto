@@ -37,7 +37,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.phonecinemaapp.data.session.UserSession
+// import com.example.phonecinemaapp.data.session.UserSession  // <- eliminado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,10 +73,10 @@ fun HomeScreen(
         )
     }.filter { it.peliculas.isNotEmpty() || searchQuery.isBlank() }
 
-    LaunchedEffect(Unit) {
-        val user = UserSession.currentUser
-        if (user != null) homeViewModel.loadUser(user.name)
-    }
+    // LaunchedEffect(Unit) {
+    //     val user = UserSession.currentUser
+    //     if (user != null) homeViewModel.loadUser(user.name)
+    // }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -202,15 +201,14 @@ fun PeliculaItem(
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Visible,
-            modifier = Modifier.basicMarquee(        // <- animación de desplazamiento
+            modifier = Modifier.basicMarquee(
                 iterations = Int.MAX_VALUE,
                 animationMode = MarqueeAnimationMode.Immediately,
-                repeatDelayMillis = 0,     // sin pausa entre repeticiones
-                initialDelayMillis = 0,    // sin pausa inicial
+                repeatDelayMillis = 0,
+                initialDelayMillis = 0,
                 spacing = MarqueeSpacing(15.dp),
-                velocity = 30.dp           // velocidad mas fluida
+                velocity = 30.dp
             )
         )
-
     }
 }

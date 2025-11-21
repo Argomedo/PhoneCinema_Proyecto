@@ -1,4 +1,4 @@
-package com.example.phonecinemaapp.ui.reseñas
+package com.example.phonecinemaapp.ui.resenas
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,15 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.phonecinemaapp.data.PeliculaRepository
-import com.example.phonecinemaapp.data.local.database.AppDatabase
-import com.example.phonecinemaapp.data.local.review.ReviewEntity
-import com.example.phonecinemaapp.data.repository.ReviewRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.ui.home.Pelicula
 
@@ -29,22 +25,11 @@ fun ReviewScreen(
     navController: NavController,
     movieId: Int,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    reviewViewModel: ReviewViewModel = viewModel()   // <- ViewModel inyectado, sin Room aquí
 ) {
-    val context = LocalContext.current
-    val db = remember { AppDatabase.getInstance(context) }
-    val reviewRepo = remember { ReviewRepository(db.reviewDao()) }
-    val reviewViewModel: ReviewViewModel = viewModel(factory = ReviewViewModelFactory(reviewRepo))
-
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
-
-    // NUEVO → Calcular calificación general
-    val calificacionGeneral by remember(uiState.reviews) {
-        derivedStateOf {
-            calcularCalificacionGeneral(uiState.reviews)
-        }
-    }
 
     LaunchedEffect(movieId) {
         reviewViewModel.loadReviews(movieId)
@@ -67,12 +52,7 @@ fun ReviewScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            // NUEVO → Pasar calificación general al header
-            MovieHeader(
-                pelicula = pelicula,
-                calificacionGeneral = calificacionGeneral,
-                totalResenas = uiState.reviews.size
-            )
+            MovieHeader(pelicula)
 
             ReviewInputSection(
                 rating = uiState.currentRating,
@@ -89,20 +69,8 @@ fun ReviewScreen(
     }
 }
 
-//Función para calcular calificación general
-private fun calcularCalificacionGeneral(reviews: List<ReviewEntity>): Float {
-    if (reviews.isEmpty()) return 0f
-    val suma = reviews.sumOf { it.rating.toDouble() }
-    return (suma / reviews.size).toFloat()
-}
-
-//MovieHeader actualizado con calificación general
 @Composable
-fun MovieHeader(
-    pelicula: Pelicula,
-    calificacionGeneral: Float,
-    totalResenas: Int
-) {
+fun MovieHeader(pelicula: Pelicula) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,39 +99,6 @@ fun MovieHeader(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // NUEVO → Mostrar calificación general
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Mostrar estrellas de la calificación general
-                    for (i in 1..5) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = if (i <= calificacionGeneral) Color(0xFFFFC107) else Color.Gray,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "%.1f".format(calificacionGeneral),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "(${totalResenas} ${if (totalResenas == 1) "reseña" else "reseñas"})",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -230,10 +165,19 @@ fun ReviewInputSection(
 }
 
 @Composable
-fun ReviewsList(reviews: List<ReviewEntity>) {
+fun ReviewsList(reviews: List<ReviewUi>) {
     LazyColumn {
         items(reviews) { review ->
-            ReviewItem(review = review)
+            ReviewItem(
+                review = ReviewUi(
+                    userName = review.userName,
+                    rating = review.rating.toInt(),
+                    comment = review.comment,
+                    timestamp = review.timestamp,
+                    fotoUsuario = review.fotoUsuario
+                )
+            )
         }
     }
 }
+

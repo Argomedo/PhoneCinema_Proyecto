@@ -2,9 +2,10 @@ package com.example.phonecinemaapp.ui.perfil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phonecinemaapp.data.local.user.UserEntity
-import com.example.phonecinemaapp.data.repository.ReviewRepository
+import com.example.phonecinema.data.dto.UserDto
 import com.example.phonecinemaapp.data.repository.UserRepository
+import com.example.phonecinema.data.repository.ReviewRepository   // <- este es el remote
+import com.example.phonecinemaapp.data.local.user.toDto
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,7 @@ data class PerfilUiState(
     val isLoggedOut: Boolean = false,
     val errorMensaje: String? = null,
     val successMensaje: String? = null,
-    val userReviews: List<com.example.phonecinemaapp.data.local.review.ReviewEntity> = emptyList()
+    val userReviews: List<Any> = emptyList() // por ahora vacío
 )
 
 class PerfilViewModel(
@@ -31,40 +32,31 @@ class PerfilViewModel(
     private val _uiState = MutableStateFlow(PerfilUiState())
     val uiState: StateFlow<PerfilUiState> = _uiState.asStateFlow()
 
-    private var currentUser: UserEntity? = null
+    private var currentUser = UserSession.currentUser
 
-    fun cargarUsuario(email: String) {
+    fun cargarUsuario(id: Long) {
         viewModelScope.launch {
-            val user = userRepository.getUserByEmail(email)
-            if (user != null) {
-                currentUser = user
-                _uiState.update {
-                    it.copy(
-                        id = user.id,
-                        nombre = user.name,
-                        email = user.email,
-                        fotoUri = user.photousuario
-                    )
-                }
-            } else {
-                _uiState.update { it.copy(errorMensaje = "Usuario no encontrado") }
+            val user = userRepository.getUserById(id)
+
+            _uiState.update {
+                it.copy(
+                    id = user.id,
+                    nombre = user.username,
+                    email = "",
+                    fotoUri = ""
+                )
             }
         }
     }
 
-    fun cargarResenasUsuario(userEmail: String) {
-        viewModelScope.launch {
-            try {
-                val usuarioActual = userRepository.getUserByEmail(userEmail)
-                if (usuarioActual != null) {
-                    val allReviews = reviewRepository.getAllReviews()
-                    val userReviews = allReviews.filter { it.userId == usuarioActual.id }
-                    _uiState.update { it.copy(userReviews = userReviews) }
-                }
-            } catch (e: Exception) {
-                // Manejar error silenciosamente
-            }
-        }
+
+
+
+
+    // No existe endpoint para traer reseñas por usuario en tu microservicio.
+    // Se deja vacía para evitar errores.
+    fun cargarResenasUsuario(userEmail: Long) {
+        _uiState.update { it.copy(userReviews = emptyList()) }
     }
 
     fun onNombreChange(newNombre: String) {
@@ -84,21 +76,62 @@ class PerfilViewModel(
         }
     }
 
+    fun cambiarPassword(nuevaPassword: String, confirmacion: String) {
+        viewModelScope.launch {
+
+            val usuarioActual = currentUser ?: run {
+                _uiState.update { it.copy(errorMensaje = "No hay usuario cargado") }
+                return@launch
+            }
+
+            if (nuevaPassword != confirmacion) {
+                _uiState.update { it.copy(errorMensaje = "Las contraseñas no coinciden") }
+                return@launch
+            }
+
+            if (nuevaPassword.length < 6) {
+                _uiState.update { it.copy(errorMensaje = "La contraseña debe tener al menos 6 caracteres") }
+                return@launch
+            }
+
+            val actualizadoEntity = usuarioActual.copy(password = nuevaPassword)
+            val dto = actualizadoEntity.toDto()
+
+            userRepository.updateUser(dto)
+
+            UserSession.currentUser = actualizadoEntity
+            currentUser = actualizadoEntity
+
+            _uiState.update {
+                it.copy(
+                    successMensaje = "Contraseña actualizada correctamente",
+                    errorMensaje = null
+                )
+            }
+        }
+    }
+
+
+
     fun guardarCambios() {
         viewModelScope.launch {
             val usuarioActual = currentUser
             if (usuarioActual != null) {
-                val actualizado = usuarioActual.copy(
+
+                val actualizadoEntity = usuarioActual.copy(
                     name = _uiState.value.nombre,
                     email = _uiState.value.email,
                     photousuario = _uiState.value.fotoUri
                 )
 
-                userRepository.updateUser(actualizado)
+                // Convertir a DTO para backend
+                val dto = actualizadoEntity.toDto()
 
-                UserSession.currentUser = actualizado
+                userRepository.updateUser(dto)
 
-                currentUser = actualizado
+                UserSession.currentUser = actualizadoEntity
+                currentUser = actualizadoEntity
+
                 _uiState.update {
                     it.copy(
                         successMensaje = "Datos guardados correctamente",
@@ -116,49 +149,7 @@ class PerfilViewModel(
         }
     }
 
-    fun cambiarPassword(nuevaPassword: String, confirmacion: String) {
-        viewModelScope.launch {
-            try {
-                val usuarioActual = currentUser
-                if (usuarioActual != null) {
-                    if (nuevaPassword != confirmacion) {
-                        _uiState.update {
-                            it.copy(errorMensaje = "Las contraseñas no coinciden")
-                        }
-                        return@launch
-                    }
 
-                    if (nuevaPassword.length < 6) {
-                        _uiState.update {
-                            it.copy(errorMensaje = "La contraseña debe tener al menos 6 caracteres")
-                        }
-                        return@launch
-                    }
-
-                    val usuarioActualizado = usuarioActual.copy(password = nuevaPassword)
-                    userRepository.updateUser(usuarioActualizado)
-
-                    UserSession.currentUser = usuarioActualizado
-                    currentUser = usuarioActualizado
-
-                    _uiState.update {
-                        it.copy(
-                            successMensaje = "Contraseña actualizada correctamente",
-                            errorMensaje = null
-                        )
-                    }
-                } else {
-                    _uiState.update {
-                        it.copy(errorMensaje = "No hay usuario cargado")
-                    }
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(errorMensaje = "Error al cambiar la contraseña: ${e.message}")
-                }
-            }
-        }
-    }
 
     fun clearMessages() {
         _uiState.update {

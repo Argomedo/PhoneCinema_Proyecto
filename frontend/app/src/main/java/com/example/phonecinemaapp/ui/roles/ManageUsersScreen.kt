@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinema.data.dto.UserDto
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import kotlinx.coroutines.launch
@@ -28,9 +28,8 @@ fun ManageUsersScreen(
     onLogoutClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var users by remember { mutableStateOf<List<UserEntity>>(emptyList()) }
+    var users by remember { mutableStateOf<List<UserDto>>(emptyList()) }
 
-    // Cargar usuarios (excluye Admin)
     LaunchedEffect(Unit) {
         users = userRepo.getAllUsers().filter { it.role != "Admin" }
     }
@@ -67,7 +66,7 @@ fun ManageUsersScreen(
                             user = user,
                             onBan = {
                                 scope.launch {
-                                    userRepo.deleteUser(user)
+                                    userRepo.deleteUser(user.id)
                                     users = users.filter { it.id != user.id }
                                 }
                             },
@@ -75,8 +74,10 @@ fun ManageUsersScreen(
                                 scope.launch {
                                     val nuevoRol =
                                         if (user.role == "Usuario") "Moderador" else "Usuario"
+
                                     val actualizado = user.copy(role = nuevoRol)
                                     userRepo.updateUser(actualizado)
+
                                     users = users.map {
                                         if (it.id == user.id) actualizado else it
                                     }
@@ -92,7 +93,7 @@ fun ManageUsersScreen(
 
 @Composable
 fun UserCard(
-    user: UserEntity,
+    user: UserDto,
     onBan: () -> Unit,
     onToggleRole: () -> Unit
 ) {
@@ -101,19 +102,18 @@ fun UserCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0E1A3B) // fondo azul oscuro
+            containerColor = Color(0xFF0E1A3B)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f)) // borde dorado
+        border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f))
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            // Datos principales del usuario
             Text(
-                text = "Nombre: ${user.name}",
+                text = "Nombre: ${user.username}",
                 color = Color(0xFFFAFAFA),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -139,7 +139,6 @@ fun UserCard(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
 
-            // Acciones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

@@ -1,4 +1,4 @@
-package com.example.phonecinemaapp.ui.reseñas
+package com.example.phonecinemaapp.ui.resenas
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,14 +27,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.phonecinemaapp.data.local.review.ReviewEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// Modelo simple para la UI, SIN Room
+data class ReviewUi(
+    val userName: String,
+    val rating: Int,
+    val comment: String,
+    val timestamp: Long,
+    val fotoUsuario: String = ""
+)
+
 @Composable
 fun ReviewItem(
-    review: ReviewEntity,
+    review: ReviewUi,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -98,7 +106,7 @@ fun ReviewItem(
                     Icon(
                         Icons.Default.Star,
                         contentDescription = null,
-                        tint = if (i < review.rating.toInt()) Color(0xFFFFC107) else Color.Gray,
+                        tint = if (i < review.rating) Color(0xFFFFC107) else Color.Gray,
                         modifier = Modifier.size(20.dp)
                     )
                 }
