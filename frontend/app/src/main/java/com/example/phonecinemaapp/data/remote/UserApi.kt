@@ -1,6 +1,7 @@
 package com.example.phonecinema.data.remote
 
-import com.example.phonecinema.data.dto.UserDto
+import UserDto
+
 import com.example.phonecinemaapp.data.remote.dto.UserRegisterDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -8,6 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface UserApi {
 
@@ -21,7 +23,10 @@ interface UserApi {
     suspend fun delete(@Path("id") id: String)
 
     @PUT("usuarios/{id}")
-    suspend fun update(@Path("id") id: String, @Body dto: UserDto)
+    suspend fun update(
+        @Path("id") id: String,
+        @Query("rol") nuevoRol: String
+    ): UserDto
 
     @POST("usuarios/registrar")
     suspend fun register(@Body body: UserRegisterDto): UserDto

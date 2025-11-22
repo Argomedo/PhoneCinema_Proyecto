@@ -1,5 +1,6 @@
 package com.example.phonecinemaapp.ui.roles
 
+import UserDto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.phonecinema.data.dto.UserDto
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 import kotlinx.coroutines.launch
@@ -29,11 +29,8 @@ fun ManageUsersScreen(
     val scope = rememberCoroutineScope()
     var users by remember { mutableStateOf<List<UserDto>>(emptyList()) }
 
-    // Carga segura inicial
     LaunchedEffect(Unit) {
-        users = runCatching {
-            userRepo.getAllUsers().filter { it.rol != null && it.rol != "Admin" }
-        }.getOrElse { emptyList() }
+        users = runCatching { userRepo.getAllUsers() }.getOrElse { emptyList() }
     }
 
     Scaffold(
@@ -69,26 +66,28 @@ fun ManageUsersScreen(
                             onBan = {
                                 scope.launch {
                                     runCatching {
-                                        val id = user.id ?: return@runCatching
-                                        userRepo.deleteUser(id)
-                                        users = users.filter { it.id != id }
+                                        userRepo.deleteUser(user.id)   // ← corrección
+                                        users = users.filter { it.id != user.id }
                                     }
                                 }
                             },
                             onToggleRole = {
                                 scope.launch {
                                     runCatching {
-                                        val id = user.id ?: return@runCatching
                                         val nuevoRol = when (user.rol) {
                                             "Usuario" -> "Moderador"
                                             "Moderador" -> "Usuario"
                                             else -> "Usuario"
                                         }
-                                        val actualizado = user.copy(rol = nuevoRol)
-                                        userRepo.updateUser(actualizado)
-                                        users = users.map { if (it.id == id) actualizado else it }
+
+                                        // Llamada correcta
+                                        userRepo.updateUser(user.id, nuevoRol)
+
+                                        // Refresca la lista visualmente
+                                        users = users.map { if (it.id == user.id) it.copy(rol = nuevoRol) else it }
                                     }
                                 }
+
                             }
                         )
                     }
@@ -125,7 +124,7 @@ fun UserCard(
         Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
 
             Text(
-                text = "Nombre: ${user.nombre ?: "Desconocido"}",
+                text = "Nombre: ${user.nombre}",
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -133,7 +132,7 @@ fun UserCard(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = "Correo: ${user.email ?: "N/A"}",
+                text = "Correo: ${user.email}",
                 color = Color(0xFFFFC107),
                 style = MaterialTheme.typography.bodySmall
             )
@@ -141,7 +140,7 @@ fun UserCard(
             Spacer(Modifier.height(2.dp))
 
             Text(
-                text = "Rol actual: ${user.rol ?: "Sin rol"}",
+                text = "Rol actual: ${user.rol}",
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -161,10 +160,10 @@ fun UserCard(
 
                 Row {
                     IconButton(onClick = onToggleRole) {
-                        Icon(Icons.Default.SwapHoriz, "Cambiar Rol", tint = Color(0xFFFFC107))
+                        Icon(Icons.Default.SwapHoriz, contentDescription = "Cambiar Rol", tint = Color(0xFFFFC107))
                     }
                     IconButton(onClick = onBan) {
-                        Icon(Icons.Default.Block, "Banear Usuario", tint = Color(0xFFB23A48))
+                        Icon(Icons.Default.Block, contentDescription = "Banear Usuario", tint = Color(0xFFB23A48))
                     }
                 }
             }

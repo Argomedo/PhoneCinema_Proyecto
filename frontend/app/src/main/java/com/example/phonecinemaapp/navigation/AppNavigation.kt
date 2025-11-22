@@ -168,6 +168,33 @@ fun AppNavigation() {
                 }
             )
         }
+
+        composable(AppScreens.UsersManagementScreen.route) {
+            ManageUsersScreen(
+                userRepo = userRepository,
+                onNavigateBackToAdmin = { navController.popBackStack() },
+                onLogoutClick = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(AppScreens.ReviewsManagementScreen.route) {
+            ManageReviewsScreen(
+                reviewRepo = reviewRepository,
+                onNavigateBackPanel = { navController.popBackStack() },
+                onLogoutClick = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }
 

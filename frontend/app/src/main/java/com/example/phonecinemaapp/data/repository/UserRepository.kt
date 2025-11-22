@@ -1,8 +1,8 @@
 package com.example.phonecinemaapp.data.repository
 
+import UserDto
 import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinema.data.remote.UserApi
-import com.example.phonecinema.data.dto.UserDto
 import com.example.phonecinemaapp.data.remote.dto.UserRegisterDto
 import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.data.local.user.UserEntity
@@ -19,7 +19,8 @@ class UserRepository(userApi: UserApi) {
 
     suspend fun deleteUser(id: Long) = api.delete(id.toString())
 
-    suspend fun updateUser(dto: UserDto) = api.update(dto.id.toString(), dto)
+    suspend fun updateUser(id: Long, nuevoRol: String) =
+        api.update(id.toString(), nuevoRol)
 
     suspend fun getUserById(id: Long): UserDto = api.getById(id.toString())
 
@@ -31,3 +32,4 @@ class UserRepository(userApi: UserApi) {
             Result.failure(e)
         }
 }
+

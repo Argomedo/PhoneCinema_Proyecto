@@ -11,6 +11,8 @@ import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
 import com.phonecinema.serviciosusuario.model.Usuario;
 import com.phonecinema.serviciosusuario.service.UsuarioService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -31,5 +33,23 @@ public class UsuarioController {
         } catch (RuntimeException ex) {
             return ResponseEntity.status(401).body(new TokenDTO(null, "Credenciales inválidas"));
         }
+    }
+
+    @GetMapping
+    public List<Usuario> obtenerTodos() {
+        return usuarioService.obtenerTodos();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Integer id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public Usuario actualizarRol(
+            @PathVariable Integer id,
+            @RequestParam String rol) {
+        return usuarioService.actualizarRol(id, rol);
     }
 }

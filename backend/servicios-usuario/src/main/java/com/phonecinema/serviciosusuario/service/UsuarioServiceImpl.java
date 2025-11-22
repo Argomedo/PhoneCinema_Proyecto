@@ -9,6 +9,8 @@ import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
 import com.phonecinema.serviciosusuario.model.Usuario;
 import com.phonecinema.serviciosusuario.repository.UsuarioRepository;
 
+import java.util.List;
+
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
@@ -45,6 +47,27 @@ public class UsuarioServiceImpl implements UsuarioService {
         } else {
             throw new RuntimeException("Credenciales inválidas");
         }
+    }
+
+    @Override
+    public List<Usuario> obtenerTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    // Nuevo método: eliminar usuario
+    @Override
+    public void eliminarUsuario(Integer id) {
+        usuarioRepository.deleteById(id);
+    }
+
+    // Nuevo método: actualizar rol
+    @Override
+    public Usuario actualizarRol(Integer id, String nuevoRol) {
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setRol(nuevoRol);
+        return usuarioRepository.save(usuario);
     }
 
     private void validarPassword(String password) {

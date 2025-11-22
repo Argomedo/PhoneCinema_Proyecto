@@ -1,7 +1,7 @@
-package com.example.phonecinema.data.dto
+import com.google.gson.annotations.SerializedName
 
 data class AuthResponseDto(
-    val id: Long,
+    @SerializedName("idUsuario") val id: Long,
     val nombre: String,
     val email: String,
     val fotoPerfilUrl: String?,
@@ -9,4 +9,3 @@ data class AuthResponseDto(
     val mensaje: String,
     val token: String?
 )
-
