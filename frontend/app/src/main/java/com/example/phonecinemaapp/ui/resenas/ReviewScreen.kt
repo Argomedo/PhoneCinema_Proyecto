@@ -180,4 +180,3 @@ fun ReviewsList(reviews: List<ReviewUi>) {
         }
     }
 }
-

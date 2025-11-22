@@ -7,7 +7,7 @@ import com.example.phonecinema.data.remote.RemoteModule
 
 class AuthRepository {
 
-    private val api = RemoteModule.create(AuthApi::class.java)
+    private val api = RemoteModule.createUsuarios(AuthApi::class.java)
 
     suspend fun login(email: String, password: String): AuthResponseDto {
         val body = AuthRequestDto(

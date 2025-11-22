@@ -9,7 +9,7 @@ import com.example.phonecinemaapp.data.local.user.UserEntity
 
 class UserRepository(userApi: UserApi) {
 
-    private val api = RemoteModule.create(UserApi::class.java)
+    private val api = RemoteModule.createUsuarios(UserApi::class.java)
 
     suspend fun saveUser(user: UserEntity) {
         UserSession.setUser(user)
@@ -31,4 +31,3 @@ class UserRepository(userApi: UserApi) {
             Result.failure(e)
         }
 }
-
