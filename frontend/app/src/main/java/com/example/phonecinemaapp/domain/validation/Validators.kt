@@ -16,13 +16,6 @@ fun validateName(name: String): String? {
     return if (!regex.matches(name)) "Solo letras y espacios" else null
 }
 
-// Versión opcional si necesitas validar teléfono igual que el profe
-fun validatePhoneDigitsOnly(phone: String): String? {
-    if (phone.isBlank()) return "El teléfono es obligatorio"
-    if (!phone.all { it.isDigit() }) return "Solo números"
-    if (phone.length !in 8..15) return "Debe tener entre 8 y 15 dígitos"
-    return null
-}
 
 // Valida seguridad de la contraseña (mín. 8, mayús, minús, número y símbolo; sin espacios) – igual que el profe
 fun validatePassword(password: String): String? {

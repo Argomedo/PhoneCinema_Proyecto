@@ -7,7 +7,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 
 object RemoteModule {
 
-    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+    private const val BASE_URL = "http://192.168.1.37:8081/api/"
+
     // 10.0.2.2 para acceder al backend Spring Boot desde emulador Android
 
     private val logging = HttpLoggingInterceptor().apply {

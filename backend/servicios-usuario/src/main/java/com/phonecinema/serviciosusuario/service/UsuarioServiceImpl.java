@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.phonecinema.serviciosusuario.dto.LoginDTO;
+import com.phonecinema.serviciosusuario.dto.AuthResponseDTO;
 import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
 import com.phonecinema.serviciosusuario.model.Usuario;
 import com.phonecinema.serviciosusuario.repository.UsuarioRepository;
@@ -16,28 +17,44 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario registrarUsuario(UsuarioRegistroDTO registroDTO) {
-        // ... (lógica de registro que ya teníamos) ...
+        validarPassword(registroDTO.getPassword());
+
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombre(registroDTO.getNombre());
         nuevoUsuario.setEmail(registroDTO.getEmail());
-        nuevoUsuario.setContrasena(registroDTO.getContrasena()); // Temporalmente sin encriptar
-        nuevoUsuario.setRol("USUARIO");
+        nuevoUsuario.setPassword(registroDTO.getPassword());
+        nuevoUsuario.setFotoPerfilUrl(registroDTO.getFotoPerfilUrl());
+        nuevoUsuario.setRol(registroDTO.getRol());
+
         return usuarioRepository.save(nuevoUsuario);
     }
 
-    // LÓGICA DE LOGIN AÑADIDA
     @Override
-    public String loginUsuario(LoginDTO loginDTO) {
-        // 1. Buscamos un usuario por su email
+    public AuthResponseDTO loginUsuario(LoginDTO loginDTO) {
         Usuario usuario = usuarioRepository.findByEmail(loginDTO.getEmail());
 
-        // 2. Verificamos si el usuario existe y si la contraseña coincide
-        if (usuario != null && usuario.getContrasena().equals(loginDTO.getContrasena())) {
-            // Si es correcto, devolvemos un "token" de mentira por ahora
-            return "login_exitoso_token_temporal";
+        if (usuario != null && usuario.getPassword().equals(loginDTO.getPassword())) {
+            return new AuthResponseDTO(
+                usuario.getIdUsuario().longValue(),
+                usuario.getNombre(),
+                usuario.getEmail(),
+                usuario.getRol(),
+                usuario.getFotoPerfilUrl(),
+                "token_temporal"
+            );
         } else {
-            // Si no, devolvemos un mensaje de error
-            return "error_credenciales_invalidas";
+            throw new RuntimeException("Credenciales inválidas");
+        }
+    }
+
+    private void validarPassword(String password) {
+        if (password.length() < 8 ||
+            !password.matches(".*[A-Z].*") ||
+            !password.matches(".*[a-z].*") ||
+            !password.matches(".*\\d.*") ||
+            !password.matches(".*[^A-Za-z0-9].*") ||
+            password.contains(" ")) {
+            throw new IllegalArgumentException("La contraseña no cumple requisitos");
         }
     }
 }

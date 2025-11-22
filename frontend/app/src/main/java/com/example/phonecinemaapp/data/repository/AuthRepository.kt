@@ -11,7 +11,7 @@ class AuthRepository {
 
     suspend fun login(email: String, password: String): AuthResponseDto {
         val body = AuthRequestDto(
-            username = email,
+            email = email,
             password = password
         )
         return api.login(body)

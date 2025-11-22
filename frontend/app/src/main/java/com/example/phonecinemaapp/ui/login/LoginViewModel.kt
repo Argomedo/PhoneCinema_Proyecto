@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 data class LoginUiState(
     val email: String = "",
-    val contrasena: String = "",
+    val password: String = "",
     val loginExitoso: Boolean = false,
     val errorMsg: String? = null
 )
@@ -32,37 +32,39 @@ class LoginViewModel(
     }
 
     fun onPasswordChange(password: String) {
-        _uiState.update { it.copy(contrasena = password, errorMsg = null) }
+        _uiState.update { it.copy(password = password, errorMsg = null) }
     }
 
     fun iniciarSesion() {
         val state = _uiState.value
 
-        if (state.email.isBlank() || state.contrasena.isBlank()) {
+        if (state.email.isBlank() || state.password.isBlank()) {
             _uiState.update { it.copy(errorMsg = "Debes completar todos los campos") }
             return
         }
 
-        // Login directo sin backend
-        if (state.email == "admin@phonecinema.com" && state.contrasena == "Admin123!") {
+        viewModelScope.launch {
+            try {
+                val response = authRepository.login(state.email, state.password)
 
-            UserSession.currentUser = UserEntity(
-                id = 1,
-                name = "Administrador",
-                email = state.email,
-                password = state.contrasena,
-                photousuario = "",
-                role = "Admin"
-            )
+                val user = UserEntity(
+                    id = response.id ?: 0L,
+                    nombre = response.nombre ?: "",
+                    email = response.email ?: "",
+                    fotoPerfilUrl = response.fotoPerfilUrl ?: "",
+                    rol = response.rol ?: "Usuario"
+                )
 
-            _uiState.update { it.copy(loginExitoso = true) }
-            return
+                UserSession.setUser(user)
+                userRepository.saveUser(user)
+
+                _uiState.update { it.copy(loginExitoso = true) }
+
+            } catch (_: Exception) {
+                _uiState.update { it.copy(errorMsg = "Credenciales incorrectas") }
+            }
         }
-
-        // Si no coincide, marcar error inmediato
-        _uiState.update { it.copy(errorMsg = "Credenciales incorrectas") }
     }
-
 
     fun clearLoginResult() {
         _uiState.update { it.copy(loginExitoso = false, errorMsg = null) }

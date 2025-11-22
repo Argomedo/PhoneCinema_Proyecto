@@ -26,7 +26,10 @@ import com.example.phonecinemaapp.ui.registro.RegistroScreen
 import com.example.phonecinemaapp.ui.registro.RegistroViewModel
 import com.example.phonecinemaapp.ui.resenas.ReviewScreen
 import com.example.phonecinemaapp.ui.resenas.ReviewViewModel
-
+import com.example.phonecinemaapp.ui.roles.AdminScreen
+import com.example.phonecinemaapp.ui.roles.ManageReviewsScreen
+import com.example.phonecinemaapp.ui.roles.ManageUsersScreen
+import com.example.phonecinemaapp.ui.roles.ModeradorScreen
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
@@ -34,31 +37,32 @@ fun AppNavigation() {
 
     val navController = rememberNavController()
 
-    // === Remote services ===
     val authApi = RemoteModule.create(AuthApi::class.java)
     val userApi = RemoteModule.create(UserApi::class.java)
     val reviewApi = RemoteModule.create(ReviewApi::class.java)
     val movieApi = RemoteModule.create(MovieApi::class.java)
 
-    // === Repositorios ===
     val authRepository = AuthRepository()
     val userRepository = UserRepository(userApi)
     val reviewRepository = ReviewRepository(reviewApi)
-    // movieRepository si lo necesitas más adelante…
 
     NavHost(
         navController = navController,
         startDestination = AppScreens.LoginScreen.route
     ) {
 
-        // LOGIN
         composable(AppScreens.LoginScreen.route) {
             val vm = LoginViewModel(authRepository, userRepository)
-
             LoginScreen(
                 loginViewModel = vm,
                 onLoginExitoso = {
-                    navController.navigate(AppScreens.HomeScreen.route) {
+                    val rol = UserSession.currentUser?.rol?.uppercase()
+                    val destino = when (rol) {
+                        "ADMIN" -> AppScreens.AdminScreen.route
+                        "MODERADOR" -> AppScreens.ModeradorScreen.route
+                        else -> AppScreens.HomeScreen.route
+                    }
+                    navController.navigate(destino) {
                         popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 },
@@ -68,17 +72,14 @@ fun AppNavigation() {
             )
         }
 
-        // REGISTRO
         composable(AppScreens.RegistroScreen.route) {
             val vm = RegistroViewModel(userRepository)
-
             RegistroScreen(
                 registroViewModel = vm,
                 onNavigateToLogin = { navController.popBackStack() }
             )
         }
 
-        // HOME
         composable(AppScreens.HomeScreen.route) {
             HomeScreen(
                 onLogout = {
@@ -96,27 +97,19 @@ fun AppNavigation() {
             )
         }
 
-// PERFIL
         composable(AppScreens.PerfilScreen.route) {
-
             val id = UserSession.currentUser?.id
-
             if (id == null) {
                 navController.navigate(AppScreens.LoginScreen.route) {
                     popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                 }
                 return@composable
             }
-
-            val perfilViewModel = PerfilViewModel(
-                userRepository = userRepository,
-                reviewRepository = reviewRepository
-            )
-
+            val vm = PerfilViewModel(userRepository, reviewRepository)
             PerfilScreen(
                 navController = navController,
                 userId = id,
-                perfilViewModel = perfilViewModel,
+                perfilViewModel = vm,
                 onBackClick = { navController.popBackStack() },
                 onLogout = {
                     UserSession.currentUser = null
@@ -127,16 +120,12 @@ fun AppNavigation() {
             )
         }
 
-
-
-        // REVIEW
         composable(
-            route = AppScreens.ReviewScreen.route,
+            AppScreens.ReviewScreen.route,
             arguments = listOf(navArgument("movieId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
             val vm = ReviewViewModel(reviewRepository)
-
+            val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
             ReviewScreen(
                 navController = navController,
                 movieId = movieId,
@@ -150,17 +139,89 @@ fun AppNavigation() {
                 reviewViewModel = vm
             )
         }
+
+        composable(AppScreens.AdminScreen.route) {
+            AdminScreen(
+                navController = navController,
+                onNavigateToUsers = {},
+                onNavigateToReviews = {},
+                onLogout = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(AppScreens.ModeradorScreen.route) {
+            ModeradorScreen(
+                navController = navController,
+                onNavigateToReviews = {},
+                onLogoutClick = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        /* ADMIN */
+        composable(AppScreens.AdminScreen.route) {
+            AdminScreen(
+                navController = navController,
+
+                // → ahora sí navega al gestor de usuarios
+                onNavigateToUsers = {
+                    navController.navigate(AppScreens.UsersManagementScreen.route)
+                },
+
+                // → ahora sí navega al gestor de reseñas
+                onNavigateToReviews = {
+                    navController.navigate(AppScreens.ReviewsManagementScreen.route)
+                },
+
+                onLogout = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        /* MODERADOR */
+        composable(AppScreens.ModeradorScreen.route) {
+            ModeradorScreen(
+                navController = navController,
+
+                // → ahora sí navega a gestión de reseñas
+                onNavigateToReviews = {
+                    navController.navigate(AppScreens.ReviewsManagementScreen.route)
+                },
+
+                onLogoutClick = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
-
 
 sealed class AppScreens(val route: String) {
     object LoginScreen : AppScreens("login_screen")
     object RegistroScreen : AppScreens("registro_screen")
     object HomeScreen : AppScreens("home_screen")
     object PerfilScreen : AppScreens("perfil_screen")
+    object AdminScreen : AppScreens("admin_screen")
+    object ModeradorScreen : AppScreens("moderador_screen")
+    object UsersManagementScreen : AppScreens("users_management_screen")
+    object ReviewsManagementScreen : AppScreens("reviews_management_screen")
     object ReviewScreen : AppScreens("review_screen/{movieId}") {
         fun createRoute(movieId: Int) = "review_screen/$movieId"
     }
 }
-

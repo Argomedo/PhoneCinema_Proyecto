@@ -2,7 +2,11 @@ package com.example.phonecinema.data.dto
 
 data class UserDto(
     val id: Long,
-    val username: String,
+    val nombre: String,
     val email: String,
-    val role: String
+    val password: String,
+    val confirmPassword: String,
+    val fotoPerfilUrl: String?,
+    val rol: String
 )
+

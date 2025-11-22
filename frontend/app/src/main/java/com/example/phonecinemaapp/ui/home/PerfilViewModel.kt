@@ -2,10 +2,8 @@ package com.example.phonecinemaapp.ui.perfil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phonecinema.data.dto.UserDto
 import com.example.phonecinemaapp.data.repository.UserRepository
-import com.example.phonecinema.data.repository.ReviewRepository   // <- este es el remote
-import com.example.phonecinemaapp.data.local.user.toDto
+import com.example.phonecinema.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +19,7 @@ data class PerfilUiState(
     val isLoggedOut: Boolean = false,
     val errorMensaje: String? = null,
     val successMensaje: String? = null,
-    val userReviews: List<Any> = emptyList() // por ahora vacío
+    val userReviews: List<Any> = emptyList()
 )
 
 class PerfilViewModel(
@@ -36,125 +34,61 @@ class PerfilViewModel(
 
     fun cargarUsuario(id: Long) {
         viewModelScope.launch {
-            val user = userRepository.getUserById(id)
+            try {
+                val user = userRepository.getUserById(id)
 
-            _uiState.update {
-                it.copy(
-                    id = user.id,
-                    nombre = user.username,
-                    email = "",
-                    fotoUri = ""
-                )
+                _uiState.update {
+                    it.copy(
+                        id = user.id,
+                        nombre = user.nombre,
+                        email = user.email,
+                        fotoUri = user.fotoPerfilUrl ?: ""
+                    )
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(errorMensaje = "No fue posible cargar el usuario") }
             }
         }
     }
 
-
-
-
-
-    // No existe endpoint para traer reseñas por usuario en tu microservicio.
-    // Se deja vacía para evitar errores.
-    fun cargarResenasUsuario(userEmail: Long) {
+    fun cargarResenasUsuario(userId: Long) {
         _uiState.update { it.copy(userReviews = emptyList()) }
     }
 
-    fun onNombreChange(newNombre: String) {
-        _uiState.update { it.copy(nombre = newNombre) }
+    fun onNombreChange(nuevo: String) {
+        _uiState.update { it.copy(nombre = nuevo) }
     }
 
-    fun onEmailChange(newEmail: String) {
-        _uiState.update { it.copy(email = newEmail) }
+    fun onEmailChange(nuevo: String) {
+        _uiState.update { it.copy(email = nuevo) }
     }
 
-    fun onFotoChange(newFotoUri: String) {
-        _uiState.update {
-            it.copy(
-                fotoUri = newFotoUri,
-                successMensaje = "Foto actualizada correctamente"
-            )
-        }
+    fun onFotoChange(nuevo: String) {
+        _uiState.update { it.copy(fotoUri = nuevo) }
     }
-
-    fun cambiarPassword(nuevaPassword: String, confirmacion: String) {
-        viewModelScope.launch {
-
-            val usuarioActual = currentUser ?: run {
-                _uiState.update { it.copy(errorMensaje = "No hay usuario cargado") }
-                return@launch
-            }
-
-            if (nuevaPassword != confirmacion) {
-                _uiState.update { it.copy(errorMensaje = "Las contraseñas no coinciden") }
-                return@launch
-            }
-
-            if (nuevaPassword.length < 6) {
-                _uiState.update { it.copy(errorMensaje = "La contraseña debe tener al menos 6 caracteres") }
-                return@launch
-            }
-
-            val actualizadoEntity = usuarioActual.copy(password = nuevaPassword)
-            val dto = actualizadoEntity.toDto()
-
-            userRepository.updateUser(dto)
-
-            UserSession.currentUser = actualizadoEntity
-            currentUser = actualizadoEntity
-
-            _uiState.update {
-                it.copy(
-                    successMensaje = "Contraseña actualizada correctamente",
-                    errorMensaje = null
-                )
-            }
-        }
-    }
-
-
 
     fun guardarCambios() {
-        viewModelScope.launch {
-            val usuarioActual = currentUser
-            if (usuarioActual != null) {
+        val usuarioActual = currentUser ?: run {
+            _uiState.update { it.copy(errorMensaje = "No hay usuario cargado") }
+            return
+        }
 
-                val actualizadoEntity = usuarioActual.copy(
-                    name = _uiState.value.nombre,
-                    email = _uiState.value.email,
-                    photousuario = _uiState.value.fotoUri
-                )
+        val actualizado = usuarioActual.copy(
+            nombre = _uiState.value.nombre,
+            email = _uiState.value.email,
+            fotoPerfilUrl = _uiState.value.fotoUri
+        )
 
-                // Convertir a DTO para backend
-                val dto = actualizadoEntity.toDto()
+        UserSession.currentUser = actualizado
+        currentUser = actualizado
 
-                userRepository.updateUser(dto)
-
-                UserSession.currentUser = actualizadoEntity
-                currentUser = actualizadoEntity
-
-                _uiState.update {
-                    it.copy(
-                        successMensaje = "Datos guardados correctamente",
-                        errorMensaje = null
-                    )
-                }
-            } else {
-                _uiState.update {
-                    it.copy(
-                        errorMensaje = "No hay usuario cargado",
-                        successMensaje = null
-                    )
-                }
-            }
+        _uiState.update {
+            it.copy(successMensaje = "Datos actualizados localmente")
         }
     }
 
-
-
     fun clearMessages() {
-        _uiState.update {
-            it.copy(errorMensaje = null, successMensaje = null)
-        }
+        _uiState.update { it.copy(errorMensaje = null, successMensaje = null) }
     }
 
     fun logout() {
