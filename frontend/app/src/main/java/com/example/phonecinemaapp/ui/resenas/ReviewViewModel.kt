@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinema.data.dto.ReviewDto
 import com.example.phonecinema.data.repository.ReviewRepository
-import com.example.phonecinemaapp.ui.resenas.ReviewUi
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 data class ReviewUiState(
     val currentRating: Int = 0,
@@ -34,19 +36,16 @@ class ReviewViewModel(
         viewModelScope.launch {
             try {
                 val dtoList = reviewRepository.getReviews(movieId.toLong())
-
                 val mapped = dtoList.map { dto ->
                     ReviewUi(
-                        userName = "Usuario ${dto.userId}",  // tu backend no entrega el nombre
-                        rating = dto.rating,
+                        userName = dto.userName ?: "Usuario",
+                        rating = dto.rating.toInt(),
                         comment = dto.comment,
-                        timestamp = System.currentTimeMillis(),
-                        fotoUsuario = ""
+                        timestamp = parseTimestamp(dto.timestamp),
+                        fotoUsuario = dto.fotoUsuario ?: ""
                     )
                 }
-
-                _uiState.update { it.copy(reviews = mapped) }
-
+                _uiState.update { it.copy(reviews = mapped.sortedByDescending { it.timestamp }) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(reviews = emptyList()) }
             }
@@ -61,22 +60,40 @@ class ReviewViewModel(
                 id = null,
                 movieId = movieId.toLong(),
                 userId = usuario.id,
-                rating = _uiState.value.currentRating,
+                userName = usuario.nombre,
+                fotoUsuario = usuario.fotoPerfilUrl,
+                rating = _uiState.value.currentRating.toFloat(),
                 comment = _uiState.value.currentReviewText
             )
 
             try {
-                reviewRepository.createReview(dto)
-                loadReviews(movieId)
-
+                val created = reviewRepository.createReview(dto)
+                val newReview = ReviewUi(
+                    userName = created.userName ?: usuario.nombre,
+                    rating = created.rating.toInt(),
+                    comment = created.comment,
+                    timestamp = parseTimestamp(created.timestamp),
+                    fotoUsuario = created.fotoUsuario ?: usuario.fotoPerfilUrl
+                )
                 _uiState.update {
                     it.copy(
+                        reviews = (it.reviews + newReview).sortedByDescending { r -> r.timestamp },
                         currentRating = 0,
                         currentReviewText = ""
                     )
                 }
+            } catch (_: Exception) {}
+        }
+    }
 
-            } catch (e: Exception) {}
+    private fun parseTimestamp(timestamp: String?): Long {
+        if (timestamp == null) return System.currentTimeMillis()
+        return try {
+            val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault())
+            format.timeZone = TimeZone.getTimeZone("UTC")
+            format.parse(timestamp)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
         }
     }
 }

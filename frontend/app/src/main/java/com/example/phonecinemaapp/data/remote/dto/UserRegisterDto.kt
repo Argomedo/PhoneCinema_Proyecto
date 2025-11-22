@@ -1,7 +1,9 @@
 package com.example.phonecinemaapp.data.remote.dto
 
 data class UserRegisterDto(
-    val name: String,
+    val nombre: String,
     val email: String,
-    val password: String
+    val password: String,
+    val confirmPassword: String // solo usado en Android para validación previa
 )
+

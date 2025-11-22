@@ -87,10 +87,10 @@ fun PerfilScreen(
         onEmailChange = perfilViewModel::onEmailChange,
         onFotoChange = perfilViewModel::onFotoChange,
         onClearMessages = perfilViewModel::clearMessages,
-        onLogout = perfilViewModel::logout,
-        onChangePassword = perfilViewModel::cambiarPassword
+        onLogout = perfilViewModel::logout
     )
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,15 +103,13 @@ fun PerfilContent(
     onEmailChange: (String) -> Unit,
     onFotoChange: (String) -> Unit,
     onClearMessages: () -> Unit,
-    onLogout: () -> Unit,
-    onChangePassword: (String, String) -> Unit
+    onLogout: () -> Unit
 ) {
     val context = LocalContext.current
     val fotoPerfil = RecuerdaFotos()
 
     var tempImageFile by remember { mutableStateOf<File?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
-    var showChangePasswordDialog by remember { mutableStateOf(false) }
 
     val camaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -168,10 +166,9 @@ fun PerfilContent(
                 .fillMaxSize()
         ) {
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+
+                    // FOTO PERFIL
                     SeccionFotoPerfil(
                         fotoUri = uiState.fotoUri,
                         onTakePhoto = { showImageSourceDialog = true }
@@ -203,15 +200,6 @@ fun PerfilContent(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedButton(
-                        onClick = { showChangePasswordDialog = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "CAMBIAR CONTRASEÑA")
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Button(
                         onClick = onLogout,
                         modifier = Modifier.fillMaxWidth(),
@@ -220,54 +208,7 @@ fun PerfilContent(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(text = "CERRAR SESIÓN", color = Color.White)
-                    }
-                }
-            }
-
-            // Sección de "Mis Reseñas" sin usar Room ni listas locales
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Mis Reseñas",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Divider(
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Reviews,
-                            contentDescription = "Sin reseñas",
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Aún no has hecho ninguna reseña",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(text = "CERRAR SESIÓN")
                     }
                 }
             }
@@ -276,16 +217,6 @@ fun PerfilContent(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
-    }
-
-    if (showChangePasswordDialog) {
-        CambiarPasswordDialog(
-            onDismiss = { showChangePasswordDialog = false },
-            onConfirm = { nuevaPassword, confirmacion ->
-                onChangePassword(nuevaPassword, confirmacion)
-                showChangePasswordDialog = false
-            }
-        )
     }
 
     if (showImageSourceDialog) {
@@ -333,6 +264,7 @@ fun PerfilContent(
         }
     }
 }
+
 
 @Composable
 fun CambiarPasswordDialog(

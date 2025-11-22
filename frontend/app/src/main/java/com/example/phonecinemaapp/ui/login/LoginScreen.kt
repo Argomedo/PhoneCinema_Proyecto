@@ -58,7 +58,7 @@ fun LoginScreen(
 
     LoginContent(
         email = uiState.email,
-        password = uiState.contrasena,
+        password = uiState.password,
         error = uiState.errorMsg,
         onEmailChange = loginViewModel::onEmailChange,
         onPasswordChange = loginViewModel::onPasswordChange,

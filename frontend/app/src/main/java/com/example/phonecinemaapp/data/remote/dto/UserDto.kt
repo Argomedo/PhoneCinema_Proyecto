@@ -1,8 +1,12 @@
-package com.example.phonecinema.data.dto
+import com.google.gson.annotations.SerializedName
 
 data class UserDto(
+    @SerializedName("idUsuario")
     val id: Long,
-    val username: String,
+    val nombre: String,
     val email: String,
-    val role: String
+    val password: String,
+    val confirmPassword: String,
+    val fotoPerfilUrl: String?,
+    val rol: String
 )

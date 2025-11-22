@@ -1,6 +1,11 @@
 package com.example.phonecinemaapp.ui.roles
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,17 +21,24 @@ import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 fun ModeradorScreen(
     navController: NavController,
     onNavigateToReviews: () -> Unit,
-    onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Panel del Moderador",
-                navController = navController,
-                showBackButton = true,
-                onBackClick = onBackClick,
-                onLogoutClick = onLogoutClick
+            TopAppBar(
+                title = { Text("Panel del Moderador", color = Color.White) },
+                actions = {
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Cerrar sesión",
+                            tint = Color(0xFFB23A48)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PhoneCinemaYellow
+                )
             )
         }
     ) { padding ->
@@ -40,36 +52,30 @@ fun ModeradorScreen(
             Text(
                 text = "Funciones del Moderador",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color(0xFFFAFAFA) // blanco suave
+                color = Color(0xFFFAFAFA)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón principal - revisar reseñas
             Button(
                 onClick = onNavigateToReviews,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PhoneCinemaYellow,
-                    contentColor = Color.White
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = PhoneCinemaYellow)
             ) {
                 Text("Revisar / Eliminar Reseñas", color = Color(0xFF253B76))
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Botón secundario - cerrar sesión
             Button(
                 onClick = onLogoutClick,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFB23A48),
-                    contentColor = Color.White
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB23A48))
             ) {
-                Text("Cerrar Sesión")
+                Text("Cerrar Sesión", color = Color.White)
             }
         }
     }
 }
+
+

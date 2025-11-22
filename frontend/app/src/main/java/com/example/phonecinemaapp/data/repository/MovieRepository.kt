@@ -6,7 +6,7 @@ import com.example.phonecinema.data.remote.RemoteModule
 
 class MovieRepository {
 
-    private val api = RemoteModule.create(MovieApi::class.java)
+    private val api = RemoteModule.createUsuarios(MovieApi::class.java)
 
     suspend fun getAll(): List<MovieDto> {
         return api.getAll()
