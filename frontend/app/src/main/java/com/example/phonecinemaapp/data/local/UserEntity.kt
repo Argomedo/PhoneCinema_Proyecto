@@ -8,5 +8,3 @@ data class UserEntity(
     val fotoPerfilUrl: String = "",
     val rol: String = "Usuario"
 )
-
-

@@ -1,7 +1,6 @@
 package com.example.phonecinemaapp.domain.validation
 
 
-
 // Valida que el email no esté vacío y cumpla patrón de email (igual que el profe)
 fun validateEmail(email: String): String? {
     if (email.isBlank()) return "El email es obligatorio"
