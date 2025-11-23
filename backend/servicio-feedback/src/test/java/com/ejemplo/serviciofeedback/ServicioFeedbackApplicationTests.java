@@ -1,10 +1,10 @@
-package com.phonecinema.servicio_contenido;
+package com.ejemplo.serviciofeedback;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ServicioContenidoApplicationTests {
+class ServicioFeedbackApplicationTests {
 
 	@Test
 	void contextLoads() {
