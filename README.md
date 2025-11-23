@@ -1,18 +1,3 @@
-------*Cosas Faltantes*------
-
--Hacer Animaciones 
-  (Una al abrir una pelicula)
-  (Nose donde puede ir la otra)
-
--Integracion de API Nativa
-  (Camara)
-  (Galeria)
-
--Diferentes roles de Usuarios
-  (Normal)
-  (Moderador)
-  (Administrador)
-
 -----*Cosas Terminadas*-----
 
 -Login/Register frontend
