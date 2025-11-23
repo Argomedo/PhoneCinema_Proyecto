@@ -70,9 +70,29 @@ class AppScreensTest {
         )
 
         allScreens.forEach { screen ->
-            assertFalse(
-                "La ruta no debe contener espacios: ${screen.route}",
-                screen.route.contains(" ")
+            assertFalse("La ruta no debe contener espacios: ${screen.route}", screen.route.contains(" "))
+        }
+    }
+
+    @Test
+    fun `rutas tienen formato consistente`() {
+        val allScreens = listOf(
+            AppScreens.LoginScreen,
+            AppScreens.RegistroScreen,
+            AppScreens.HomeScreen,
+            AppScreens.PerfilScreen,
+            AppScreens.AdminScreen,
+            AppScreens.ModeradorScreen,
+            AppScreens.UsersManagementScreen,
+            AppScreens.ReviewsManagementScreen,
+            AppScreens.ReviewScreen,
+            AppScreens.FeedbackScreen
+        )
+
+        allScreens.forEach { screen ->
+            assertTrue(
+                "La ruta debe estar en minúsculas y usar underscores: ${screen.route}",
+                screen.route.matches(Regex("[a-z_/{}]+"))
             )
         }
     }
