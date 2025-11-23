@@ -22,6 +22,14 @@
 -Base de datos que almacene las reseñas y los registros de usuario
 -Menu base del usuario
 
+- CREAR ANTES DE INICIAR LOS PROCESOS LA BASE DE DATOS CORRESPONDIENTE A CÓMO ESTÁ GUARDADA EN LOS APPLICATION PROPERTIES-
+
+- MODIFICAR LA IP DEL REMOTE MODULE BASADA EN EL DISPOSITIVO EN CUAL SE ESTÁ UTILIZANDO-
+
+    private const val BASE_URL_USUARIOS = "http://192.168.1.37:8081/api/" --> AQUI SE MODIFICA SEGUN LA IP DEL DISPOSITIVO
+    private const val BASE_URL_RESENAS = "http://192.168.1.37:8082/" // ← sin /api
+    private const val BASE_URL_FEEDBACK = "http://192.168.1.37:8083/" // Nuevo microservicio de feedback en el puerto 8083
+
 --ENDPOINTS-- 
 
 ## Endpoints de la API de Feedback
