@@ -1,11 +1,4 @@
------*Cosas Terminadas*-----
-
--Login/Register frontend
--Main Menu
--Apartados de peliculas con respectivas fotos y descripciones
--Apartamiento de reseñas
--Base de datos que almacene las reseñas y los registros de usuario
--Menu base del usuario
+-Nombres de DB: resenas_db, usuarios _db y feedback_db
 
 - CREAR ANTES DE INICIAR LOS PROCESOS LA BASE DE DATOS CORRESPONDIENTE A CÓMO ESTÁ GUARDADA EN LOS APPLICATION PROPERTIES-
 
