@@ -12,7 +12,6 @@ public interface UsuarioService {
     AuthResponseDTO loginUsuario(LoginDTO loginDTO);
     List<Usuario> obtenerTodos();
 
-    // Obligatorios para que los botones funcionen
     void eliminarUsuario(Integer id);
     Usuario actualizarRol(Integer id, String nuevoRol);
 }

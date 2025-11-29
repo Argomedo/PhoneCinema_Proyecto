@@ -6,5 +6,5 @@ data class UserEntity(
     val nombre: String = "",
     val email: String = "",
     val fotoPerfilUrl: String = "",
-    val rol: String = "Usuario"
+    val rol: String = "USUARIO"
 )

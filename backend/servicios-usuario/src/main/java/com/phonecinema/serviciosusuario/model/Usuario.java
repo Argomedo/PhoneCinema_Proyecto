@@ -1,21 +1,31 @@
 package com.phonecinema.serviciosusuario.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
-@Data // Anotación de Lombok para generar getters, setters, etc.
-@Entity // Le dice a JPA que esta clase es una tabla de la base de datos
+@Data
+@Entity
+@Table(name = "usuario")
 public class Usuario {
 
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Hace que el ID sea autoincremental
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
     private Integer idUsuario;
+
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(nullable = false, unique = true, length = 120)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @Lob
     private String fotoPerfilUrl;
-    private String rol; // Rol del usuario ( "USUARIO", "ADMIN" y "MODERADOR")
+
+    @ManyToOne
+    @JoinColumn(name = "id_rol", nullable = false)
+    private Rol rol;
 }

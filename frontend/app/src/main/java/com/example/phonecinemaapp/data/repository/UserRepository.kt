@@ -3,9 +3,16 @@ package com.example.phonecinemaapp.data.repository
 import UserDto
 import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinema.data.remote.UserApi
-import com.example.phonecinemaapp.data.remote.dto.UserRegisterDto
 import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.data.local.user.UserEntity
+
+data class UsuarioRegistroDTO(
+    val nombre: String,
+    val email: String,
+    val password: String,
+    val fotoPerfilUrl: String = "",
+    val rol: String = "USUARIO"
+)
 
 class UserRepository(userApi: UserApi) {
 
@@ -26,10 +33,13 @@ class UserRepository(userApi: UserApi) {
 
     suspend fun register(nombre: String, email: String, password: String): Result<UserDto> =
         try {
-            val body = UserRegisterDto(nombre, email, password, confirmPassword = password)
+            val body = UsuarioRegistroDTO(
+                nombre = nombre.trim(),
+                email = email.trim(),
+                password = password
+            )
             Result.success(api.register(body))
         } catch (e: Exception) {
             Result.failure(e)
         }
 }
-

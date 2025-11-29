@@ -1,8 +1,7 @@
 package com.example.phonecinema.data.remote
 
 import UserDto
-
-import com.example.phonecinemaapp.data.remote.dto.UserRegisterDto
+import com.example.phonecinemaapp.data.repository.UsuarioRegistroDTO
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -29,5 +28,5 @@ interface UserApi {
     ): UserDto
 
     @POST("usuarios/registrar")
-    suspend fun register(@Body body: UserRegisterDto): UserDto
+    suspend fun register(@Body body: UsuarioRegistroDTO): UserDto
 }

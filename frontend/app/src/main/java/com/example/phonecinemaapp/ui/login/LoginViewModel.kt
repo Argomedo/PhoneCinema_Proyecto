@@ -37,7 +37,6 @@ class LoginViewModel(
 
     fun iniciarSesion() {
         val state = _uiState.value
-
         if (state.email.isBlank() || state.password.isBlank()) {
             _uiState.update { it.copy(errorMsg = "Debes completar todos los campos") }
             return
@@ -48,11 +47,11 @@ class LoginViewModel(
                 val response = authRepository.login(state.email, state.password)
 
                 val user = UserEntity(
-                    id = response.id ?: 0L,
-                    nombre = response.nombre ?: "",
-                    email = response.email ?: "",
+                    id = response.id,
+                    nombre = response.nombre,
+                    email = response.email,
                     fotoPerfilUrl = response.fotoPerfilUrl ?: "",
-                    rol = response.rol ?: "Usuario"
+                    rol = response.rol // sin uppercase
                 )
 
                 UserSession.setUser(user)
@@ -70,3 +69,4 @@ class LoginViewModel(
         _uiState.update { it.copy(loginExitoso = false, errorMsg = null) }
     }
 }
+

@@ -1,6 +1,7 @@
 package com.example.phonecinemaapp.ui.roles
 
 import UserDto
+import RolDto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -66,28 +67,28 @@ fun ManageUsersScreen(
                             onBan = {
                                 scope.launch {
                                     runCatching {
-                                        userRepo.deleteUser(user.id)   // ← corrección
+                                        userRepo.deleteUser(user.id)
                                         users = users.filter { it.id != user.id }
                                     }
                                 }
                             },
                             onToggleRole = {
                                 scope.launch {
+                                    val nuevoRol = when (user.rol.nombre.uppercase()) {
+                                        "USUARIO" -> "MODERADOR"
+                                        "MODERADOR" -> "USUARIO"
+                                        else -> "USUARIO"
+                                    }
+
                                     runCatching {
-                                        val nuevoRol = when (user.rol) {
-                                            "Usuario" -> "Moderador"
-                                            "Moderador" -> "Usuario"
-                                            else -> "Usuario"
-                                        }
-
-                                        // Llamada correcta
                                         userRepo.updateUser(user.id, nuevoRol)
-
-                                        // Refresca la lista visualmente
-                                        users = users.map { if (it.id == user.id) it.copy(rol = nuevoRol) else it }
+                                        users = users.map {
+                                            if (it.id == user.id)
+                                                it.copy(rol = RolDto(nuevoRol))
+                                            else it
+                                        }
                                     }
                                 }
-
                             }
                         )
                     }
@@ -121,7 +122,11 @@ fun UserCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f))
     ) {
-        Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
 
             Text(
                 text = "Nombre: ${user.nombre}",
@@ -140,7 +145,7 @@ fun UserCard(
             Spacer(Modifier.height(2.dp))
 
             Text(
-                text = "Rol actual: ${user.rol}",
+                text = "Rol actual: ${user.rol.nombre}",
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -160,10 +165,18 @@ fun UserCard(
 
                 Row {
                     IconButton(onClick = onToggleRole) {
-                        Icon(Icons.Default.SwapHoriz, contentDescription = "Cambiar Rol", tint = Color(0xFFFFC107))
+                        Icon(
+                            Icons.Default.SwapHoriz,
+                            contentDescription = "Cambiar Rol",
+                            tint = Color(0xFFFFC107)
+                        )
                     }
                     IconButton(onClick = onBan) {
-                        Icon(Icons.Default.Block, contentDescription = "Banear Usuario", tint = Color(0xFFB23A48))
+                        Icon(
+                            Icons.Default.Block,
+                            contentDescription = "Banear Usuario",
+                            tint = Color(0xFFB23A48)
+                        )
                     }
                 }
             }

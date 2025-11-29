@@ -9,7 +9,7 @@ object UserSession {
         currentUser = user
     }
 
-    fun isAdmin() = currentUser?.rol == "Admin"
-    fun isModerator() = currentUser?.rol == "Moderador"
-    fun isUser() = currentUser?.rol == "Usuario"
+    fun isAdmin() = currentUser?.rol == "ADMIN"
+    fun isModerator() = currentUser?.rol == "MODERADOR"
+    fun isUser() = currentUser?.rol == "USUARIO"
 }

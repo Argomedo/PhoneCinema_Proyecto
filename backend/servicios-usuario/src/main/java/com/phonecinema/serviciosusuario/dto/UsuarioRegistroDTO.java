@@ -8,6 +8,7 @@ private String nombre;
 private String email;
 private String password;
 private String fotoPerfilUrl = ""; // por defecto vacío
-private String rol = "USUARIO"; // por defecto
+private String rol = "USUARIO";
+ // por defecto
 
 }
