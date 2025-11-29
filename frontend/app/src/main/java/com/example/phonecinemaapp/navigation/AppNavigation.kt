@@ -18,6 +18,8 @@ import com.example.phonecinema.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.repository.AuthRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.data.session.UserSession
+import com.example.phonecinemaapp.ui.feedback.FeedbackScreen
+import com.example.phonecinemaapp.ui.feedback.FeedbackViewModel
 import com.example.phonecinemaapp.ui.home.HomeScreen
 import com.example.phonecinemaapp.ui.login.LoginScreen
 import com.example.phonecinemaapp.ui.login.LoginViewModel
@@ -32,8 +34,6 @@ import com.example.phonecinemaapp.ui.roles.AdminScreen
 import com.example.phonecinemaapp.ui.roles.ManageReviewsScreen
 import com.example.phonecinemaapp.ui.roles.ManageUsersScreen
 import com.example.phonecinemaapp.ui.roles.ModeradorScreen
-import com.example.phonecinemaapp.ui.feedback.FeedbackScreen  // Importación para la pantalla de Feedback
-import com.example.phonecinemaapp.ui.feedback.FeedbackViewModel
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable

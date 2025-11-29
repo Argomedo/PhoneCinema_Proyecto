@@ -3,7 +3,7 @@ package com.example.phonecinemaapp.ui.registro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.repository.UserRepository
-import com.example.phonecinemaapp.domain.validation.validateRegisterFields // importa tu validator
+import com.example.phonecinemaapp.domain.validation.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,17 +26,12 @@ class RegistroViewModel(
     private val _uiState = MutableStateFlow(RegistroUiState())
     val uiState: StateFlow<RegistroUiState> = _uiState.asStateFlow()
 
-    // --- Actualización de campos con validación inmediata ---
+    // Validación específica por orden de campo
     fun onNameChange(value: String) {
         _uiState.update {
             it.copy(
                 nombre = value,
-                errorMensaje = validateRegisterFields(
-                    it.copy(nombre = value).nombre,
-                    it.email,
-                    it.contrasena,
-                    it.confirmarContrasena
-                )
+                errorMensaje = validateName(value)
             )
         }
     }
@@ -45,12 +40,7 @@ class RegistroViewModel(
         _uiState.update {
             it.copy(
                 email = value,
-                errorMensaje = validateRegisterFields(
-                    it.nombre,
-                    it.copy(email = value).email,
-                    it.contrasena,
-                    it.confirmarContrasena
-                )
+                errorMensaje = validateEmail(value)
             )
         }
     }
@@ -59,12 +49,7 @@ class RegistroViewModel(
         _uiState.update {
             it.copy(
                 contrasena = value,
-                errorMensaje = validateRegisterFields(
-                    it.nombre,
-                    it.email,
-                    it.copy(contrasena = value).contrasena,
-                    it.confirmarContrasena
-                )
+                errorMensaje = validatePassword(value)
             )
         }
     }
@@ -73,17 +58,12 @@ class RegistroViewModel(
         _uiState.update {
             it.copy(
                 confirmarContrasena = value,
-                errorMensaje = validateRegisterFields(
-                    it.nombre,
-                    it.email,
-                    it.contrasena,
-                    it.copy(confirmarContrasena = value).confirmarContrasena
-                )
+                errorMensaje = validatePasswordConfirm(it.contrasena, value)
             )
         }
     }
 
-    // --- Registro del usuario ---
+    // Validación global solo al presionar "Registrar"
     fun registrarUsuario() {
         val s = _uiState.value
         val error = validateRegisterFields(s.nombre, s.email, s.contrasena, s.confirmarContrasena)

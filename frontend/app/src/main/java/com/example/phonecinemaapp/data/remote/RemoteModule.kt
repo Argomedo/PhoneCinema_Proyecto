@@ -7,9 +7,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 
 object RemoteModule {
 
-    private const val BASE_URL_USUARIOS = "http://192.168.1.37:8081/api/"
-    private const val BASE_URL_RESENAS = "http://192.168.1.37:8082/" // ← sin /api
-    private const val BASE_URL_FEEDBACK = "http://192.168.1.37:8083/" // Nuevo microservicio de feedback en el puerto 8083
+    private const val BASE_URL_USUARIOS = "http://10.0.2.2:8081/api/"
+    private const val BASE_URL_RESENAS = "http://10.0.2.2:8082/"
+    private const val BASE_URL_FEEDBACK = "http://10.0.2.2:8083/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

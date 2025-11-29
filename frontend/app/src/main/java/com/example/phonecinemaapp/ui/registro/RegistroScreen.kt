@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.phonecinemaapp.domain.validation.*
 
 @Composable
 fun RegistroScreen(
@@ -90,7 +91,7 @@ private fun RegistroContent(
         Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium, color = Color.White)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- Campo: Nombre ---
+        // Nombre (siempre habilitado)
         OutlinedTextField(
             value = nombre,
             onValueChange = onNombreChange,
@@ -101,19 +102,20 @@ private fun RegistroContent(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Campo: Correo ---
+        // Email habilitado solo si nombre válido
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
             label = { Text("Correo electrónico") },
             singleLine = true,
+            enabled = validateName(nombre) == null,
             modifier = Modifier.fillMaxWidth(),
             isError = error?.contains("correo", ignoreCase = true) == true ||
                     error?.contains("email", ignoreCase = true) == true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Campo: Contraseña ---
+        // Contraseña habilitada solo si email válido
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
@@ -128,12 +130,14 @@ private fun RegistroContent(
                 }
             },
             singleLine = true,
+            enabled = validateName(nombre) == null &&
+                    validateEmail(email) == null,
             modifier = Modifier.fillMaxWidth(),
             isError = error?.contains("contraseña", ignoreCase = true) == true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Campo: Confirmar contraseña ---
+        // Confirmación habilitada solo si contraseña válida
         OutlinedTextField(
             value = confirm,
             onValueChange = onConfirmChange,
@@ -148,11 +152,13 @@ private fun RegistroContent(
                 }
             },
             singleLine = true,
+            enabled = validateName(nombre) == null &&
+                    validateEmail(email) == null &&
+                    validatePassword(password) == null,
             modifier = Modifier.fillMaxWidth(),
             isError = error?.contains("coinciden", ignoreCase = true) == true
         )
 
-        // --- Mensaje general ---
         error?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
@@ -167,8 +173,7 @@ private fun RegistroContent(
                 .height(50.dp),
             enabled = error == null || error.isBlank()
         ) {
-            Text("Registrar",
-                color = Color(0xFF253B76))
+            Text("Registrar", color = Color(0xFF253B76))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
