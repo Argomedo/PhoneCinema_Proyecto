@@ -1,11 +1,13 @@
 package com.phonecinema.servicio_resenas.service;
 
+import com.phonecinema.servicio_resenas.client.UsuarioClient;
+import com.phonecinema.servicio_resenas.client.UsuarioResponse;
 import com.phonecinema.servicio_resenas.dto.ResenaDTO;
 import com.phonecinema.servicio_resenas.model.Resena;
 import com.phonecinema.servicio_resenas.repository.ResenaRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,12 +16,20 @@ import java.util.List;
 public class ResenaService {
 
     private final ResenaRepository repository;
+    private final UsuarioClient usuarioClient;   // ← comunicación con microservicio usuarios
 
     public ResenaDTO crearResena(ResenaDTO dto) {
+
+        UsuarioResponse usuario = usuarioClient.getUsuario(dto.getUserId());
+
+        if (usuario == null || usuario.getIdUsuario() == null) {
+            throw new RuntimeException("Usuario no encontrado en el microservicio usuarios");
+        }
+
         Resena entity = new Resena();
         entity.setMovieId(dto.getMovieId());
-        entity.setUserId(dto.getUserId());
-        entity.setUserName(dto.getUserName());           // ← agregar
+        entity.setUserId(usuario.getIdUsuario());
+        entity.setUserName(usuario.getNombre());
         entity.setRating(dto.getRating());
         entity.setComment(dto.getComment());
         entity.setTimestamp(LocalDateTime.now());
@@ -51,11 +61,10 @@ public class ResenaService {
         dto.setId(entity.getId());
         dto.setMovieId(entity.getMovieId());
         dto.setUserId(entity.getUserId());
-        dto.setUserName(entity.getUserName());         // ← corregido
+        dto.setUserName(entity.getUserName());
         dto.setRating(entity.getRating());
         dto.setComment(entity.getComment());
         dto.setTimestamp(entity.getTimestamp());
         return dto;
     }
 }
-

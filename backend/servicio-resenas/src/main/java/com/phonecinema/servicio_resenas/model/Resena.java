@@ -23,8 +23,8 @@ public class Resena {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = true)        // ← permitir null por compatibilidad existente
-    private String userName;        // ← necesario para conservar autor real
+    @Column(nullable = true)
+    private String userName;
 
     @Column(nullable = false)
     private Integer rating;
@@ -35,3 +35,4 @@ public class Resena {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 }
+

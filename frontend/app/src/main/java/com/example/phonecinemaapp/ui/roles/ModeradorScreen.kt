@@ -2,9 +2,6 @@ package com.example.phonecinemaapp.ui.roles
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,8 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.phonecinemaapp.ui.components.AppTopBar
-import com.example.phonecinemaapp.ui.theme.PhoneCinemaBlue
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 
 @OptIn(ExperimentalMaterial3Api::class)

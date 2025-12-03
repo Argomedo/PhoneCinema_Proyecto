@@ -11,7 +11,7 @@ public interface UsuarioService {
     Usuario registrarUsuario(UsuarioRegistroDTO registroDTO);
     AuthResponseDTO loginUsuario(LoginDTO loginDTO);
     List<Usuario> obtenerTodos();
-
+    Usuario obtenerPorId(Integer id);   // ✔ agregado
     void eliminarUsuario(Integer id);
     Usuario actualizarRol(Integer id, String nuevoRol);
 }

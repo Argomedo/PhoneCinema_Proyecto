@@ -2,8 +2,8 @@ package com.example.phonecinemaapp.ui.perfil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinema.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

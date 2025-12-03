@@ -3,6 +3,7 @@ package com.phonecinema.serviciosusuario.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.phonecinema.serviciosusuario.dto.LoginDTO;
 import com.phonecinema.serviciosusuario.dto.AuthResponseDTO;
 import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
@@ -21,7 +22,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private RolRepository rolRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -66,6 +67,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public Usuario obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    @Override
     public void eliminarUsuario(Integer id) {
         usuarioRepository.deleteById(id);
     }
@@ -82,15 +89,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    // Validación de contraseñas
+    // Validación
     private void validarPassword(String password) {
         if (
                 password.length() < 8 ||
-                        !password.matches(".*[A-Z].*") ||
-                        !password.matches(".*[a-z].*") ||
-                        !password.matches(".*\\d.*") ||
-                        !password.matches(".*[^A-Za-z0-9].*") ||
-                        password.contains(" ")
+                !password.matches(".*[A-Z].*") ||
+                !password.matches(".*[a-z].*") ||
+                !password.matches(".*\\d.*") ||
+                !password.matches(".*[^A-Za-z0-9].*") ||
+                password.contains(" ")
         ) {
             throw new IllegalArgumentException("La contraseña no cumple requisitos");
         }

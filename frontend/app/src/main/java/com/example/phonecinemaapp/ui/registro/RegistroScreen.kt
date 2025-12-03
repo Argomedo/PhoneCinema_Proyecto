@@ -32,7 +32,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.phonecinemaapp.domain.validation.*
+import com.example.phonecinemaapp.domain.validation.validateEmail
+import com.example.phonecinemaapp.domain.validation.validateName
+import com.example.phonecinemaapp.domain.validation.validatePassword
 
 @Composable
 fun RegistroScreen(

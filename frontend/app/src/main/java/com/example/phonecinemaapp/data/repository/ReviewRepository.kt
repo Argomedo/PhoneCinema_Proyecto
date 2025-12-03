@@ -2,7 +2,6 @@ package com.example.phonecinema.data.repository
 
 import ReviewApi
 import com.example.phonecinema.data.dto.ReviewDto
-import com.example.phonecinema.data.remote.RemoteModule
 
 class ReviewRepository(private val api: ReviewApi) {
 

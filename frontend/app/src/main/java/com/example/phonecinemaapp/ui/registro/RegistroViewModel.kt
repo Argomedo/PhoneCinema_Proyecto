@@ -3,7 +3,11 @@ package com.example.phonecinemaapp.ui.registro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinemaapp.data.repository.UserRepository
-import com.example.phonecinemaapp.domain.validation.*
+import com.example.phonecinemaapp.domain.validation.validateEmail
+import com.example.phonecinemaapp.domain.validation.validateName
+import com.example.phonecinemaapp.domain.validation.validatePassword
+import com.example.phonecinemaapp.domain.validation.validatePasswordConfirm
+import com.example.phonecinemaapp.domain.validation.validateRegisterFields
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinema.data.dto.FeedbackDto
-import com.example.phonecinemaapp.data.session.UserSession
-import com.example.phonecinemaapp.data.repository.FeedbackRepository
 import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinemaapp.data.repository.FeedbackRepository
+import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.launch
 
 class FeedbackViewModel(application: Application) : AndroidViewModel(application) {

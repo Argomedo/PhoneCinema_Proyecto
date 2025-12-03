@@ -3,8 +3,8 @@ package com.example.phonecinemaapp.data.repository
 import UserDto
 import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinema.data.remote.UserApi
-import com.example.phonecinemaapp.data.session.UserSession
 import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinemaapp.data.session.UserSession
 
 data class UsuarioRegistroDTO(
     val nombre: String,

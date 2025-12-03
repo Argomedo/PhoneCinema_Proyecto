@@ -1,5 +1,6 @@
 package com.example.phonecinemaapp.ui.resenas
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinemaapp.data.PeliculaRepository
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.ui.home.Pelicula
@@ -25,12 +28,21 @@ fun ReviewScreen(
     navController: NavController,
     movieId: Int,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit,
-    reviewViewModel: ReviewViewModel = viewModel()   // <- ViewModel inyectado, sin Room aquí
+    onLogoutClick: () -> Unit
 ) {
+    // ViewModel inyectado con el repositorio de Retrofit
+    val reviewViewModel: ReviewViewModel = viewModel(
+        factory = ReviewViewModelFactory(
+            reviewRepository = RemoteModule.reviewRepository
+        )
+    )
+
     val uiState by reviewViewModel.uiState.collectAsState()
+
+    // Película local
     val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
 
+    // Cargar reseñas al entrar
     LaunchedEffect(movieId) {
         reviewViewModel.loadReviews(movieId)
     }
@@ -53,6 +65,7 @@ fun ReviewScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
+
             MovieHeader(pelicula)
 
             ReviewInputSection(
@@ -60,15 +73,17 @@ fun ReviewScreen(
                 reviewText = uiState.currentReviewText,
                 onRatingChange = reviewViewModel::setRating,
                 onReviewTextChange = reviewViewModel::setReviewText,
-                onSubmitReview = {
-                    reviewViewModel.addReview(pelicula.id)
-                }
+                onSubmitReview = { reviewViewModel.addReview(movieId) }
             )
 
-            ReviewsList(reviews = uiState.reviews)
+            ReviewsList(uiState.reviews)
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+// COMPONENTES REUTILIZABLES
+// -----------------------------------------------------------------------------
 
 @Composable
 fun MovieHeader(pelicula: Pelicula) {
@@ -84,8 +99,8 @@ fun MovieHeader(pelicula: Pelicula) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(id = pelicula.posterResId),
+            Image(
+                painter = painterResource(id = pelicula.posterResId),
                 contentDescription = pelicula.nombre,
                 modifier = Modifier
                     .width(120.dp)
@@ -133,12 +148,16 @@ fun ReviewInputSection(
     onSubmitReview: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Calificación")
-        Row {
+        Text("Calificación", style = MaterialTheme.typography.titleMedium)
+
+        Row(
+            modifier = Modifier.padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             for (i in 1..5) {
                 Icon(
                     imageVector = Icons.Default.Star,
-                    contentDescription = null,
+                    contentDescription = "Estrella de calificación $i",
                     tint = if (i <= rating) Color(0xFFFFC107) else Color.Gray,
                     modifier = Modifier
                         .size(32.dp)
@@ -147,18 +166,22 @@ fun ReviewInputSection(
                 )
             }
         }
+
         OutlinedTextField(
             value = reviewText,
             onValueChange = onReviewTextChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            label = { Text("Tu reseña") }
+            label = { Text("Tu reseña") },
+            singleLine = false,
+            maxLines = 5
         )
+
         Button(
             onClick = onSubmitReview,
             modifier = Modifier.fillMaxWidth(),
-            enabled = rating > 0
+            enabled = rating > 0 && reviewText.isNotBlank()
         ) {
             Text("Publicar reseña")
         }
@@ -167,17 +190,22 @@ fun ReviewInputSection(
 
 @Composable
 fun ReviewsList(reviews: List<ReviewUi>) {
-    LazyColumn {
-        items(reviews) { review ->
-            ReviewItem(
-                review = ReviewUi(
-                    userName = review.userName,
-                    rating = review.rating.toInt(),
-                    comment = review.comment,
-                    timestamp = review.timestamp,
-                    fotoUsuario = review.fotoUsuario
-                )
-            )
+    Column(modifier = Modifier.padding(top = 8.dp)) {
+        Text(
+            text = "Reseñas de la comunidad (${reviews.size})",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxHeight(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            items(reviews) { review ->
+                // Usa el ReviewItem definido en ReviewItem.kt
+                ReviewItem(review = review)
+            }
         }
     }
 }

@@ -31,13 +31,20 @@ public class UsuarioController {
             AuthResponseDTO respuesta = usuarioService.loginUsuario(loginDTO);
             return ResponseEntity.ok(respuesta);
         } catch (RuntimeException ex) {
-            return ResponseEntity.status(401).body(new TokenDTO(null, "Credenciales inválidas"));
+            return ResponseEntity.status(401)
+                    .body(new TokenDTO(null, "Credenciales inválidas"));
         }
     }
 
     @GetMapping
     public List<Usuario> obtenerTodos() {
         return usuarioService.obtenerTodos();
+    }
+
+    // ✔ Endpoint necesario para Feign
+    @GetMapping("/{id}")
+    public Usuario obtenerPorId(@PathVariable Integer id) {
+        return usuarioService.obtenerPorId(id);
     }
 
     @DeleteMapping("/{id}")
@@ -47,9 +54,8 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public Usuario actualizarRol(
-            @PathVariable Integer id,
-            @RequestParam String rol) {
+    public Usuario actualizarRol(@PathVariable Integer id,
+                                 @RequestParam String rol) {
         return usuarioService.actualizarRol(id, rol);
     }
 }

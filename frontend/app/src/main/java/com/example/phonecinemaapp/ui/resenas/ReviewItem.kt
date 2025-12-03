@@ -27,18 +27,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-// Modelo simple para la UI, SIN Room
+// --- Modelo para UI (compatible con backend)
 data class ReviewUi(
     val userName: String,
     val rating: Int,
     val comment: String,
-    val timestamp: Long,
+    val timestamp: String,   // ← String porque backend envía ISO-8601
     val fotoUsuario: String = ""
 )
+
 
 @Composable
 fun ReviewItem(
@@ -50,17 +48,19 @@ fun ReviewItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF253B76).copy(alpha = 0.1f))
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF253B76).copy(alpha = 0.1f)
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // --- Usuario (izquierda) y fecha (derecha) ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) { //Para poner la foto en la review
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
                     if (review.fotoUsuario.isNotEmpty()) {
                         AsyncImage(
                             model = review.fotoUsuario,
@@ -70,7 +70,7 @@ fun ReviewItem(
                                 .size(40.dp)
                                 .clip(CircleShape)
                         )
-                    } else { //sino hay foto se pone una default
+                    } else {
                         Icon(
                             Icons.Default.Person,
                             contentDescription = "Usuario",
@@ -90,7 +90,7 @@ fun ReviewItem(
                     )
                 }
 
-                // Fecha al lado derecho
+                // --- Fecha formateada ---
                 Text(
                     text = formatDate(review.timestamp),
                     style = MaterialTheme.typography.bodySmall,
@@ -100,7 +100,6 @@ fun ReviewItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Estrellas ---
             Row {
                 repeat(5) { i ->
                     Icon(
@@ -114,20 +113,24 @@ fun ReviewItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Comentario ---
             if (review.comment.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = review.comment,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
                 )
             }
         }
     }
 }
 
-private fun formatDate(timestamp: Long): String {
-    val date = Date(timestamp)
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return format.format(date)
+// --- Conversión segura de String ISO → “dd/MM/yyyy”
+private fun formatDate(timestamp: String?): String {
+    if (timestamp.isNullOrBlank()) return ""
+
+    return try {
+        timestamp.substring(0, 10)  // "2025-12-03"
+    } catch (e: Exception) {
+        ""
+    }
 }
