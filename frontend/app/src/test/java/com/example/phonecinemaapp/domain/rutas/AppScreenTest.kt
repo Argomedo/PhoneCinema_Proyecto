@@ -1,13 +1,14 @@
-// test/navigation/AppScreensTest.kt
 package com.example.phonecinemaapp.navigation
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AppScreensTest {
 
     @Test
-    fun `AppScreens tienen rutas correctas`() {
+    fun AppScreens_rutas_correctas() {
         assertEquals("login_screen", AppScreens.LoginScreen.route)
         assertEquals("registro_screen", AppScreens.RegistroScreen.route)
         assertEquals("home_screen", AppScreens.HomeScreen.route)
@@ -21,14 +22,16 @@ class AppScreensTest {
     }
 
     @Test
-    fun `ReviewScreen createRoute genera ruta correcta`() {
+    fun ReviewScreen_createRoute_genera_ruta_correcta() {
         val movieId = 123
         val expectedRoute = "review_screen/123"
-        assertEquals(expectedRoute, AppScreens.ReviewScreen.createRoute(movieId))
+        val actualRoute = AppScreens.ReviewScreen.createRoute(movieId)
+
+        assertEquals(expectedRoute, actualRoute)
     }
 
     @Test
-    fun `ReviewScreen createRoute con diferentes IDs`() {
+    fun ReviewScreen_createRoute_con_diferentes_IDs() {
         assertEquals("review_screen/1", AppScreens.ReviewScreen.createRoute(1))
         assertEquals("review_screen/999", AppScreens.ReviewScreen.createRoute(999))
         assertEquals("review_screen/0", AppScreens.ReviewScreen.createRoute(0))
@@ -36,7 +39,7 @@ class AppScreensTest {
     }
 
     @Test
-    fun `todas las rutas son unicas`() {
+    fun AppScreens_todas_rutas_unicas() {
         val routes = listOf(
             AppScreens.LoginScreen.route,
             AppScreens.RegistroScreen.route,
@@ -51,11 +54,11 @@ class AppScreensTest {
         )
 
         val uniqueRoutes = routes.distinct()
-        assertEquals("Todas las rutas deben ser únicas", routes.size, uniqueRoutes.size)
+        assertEquals(routes.size, uniqueRoutes.size)
     }
 
     @Test
-    fun `rutas no contienen espacios`() {
+    fun AppScreens_rutas_sin_espacios() {
         val allScreens = listOf(
             AppScreens.LoginScreen,
             AppScreens.RegistroScreen,
@@ -70,12 +73,13 @@ class AppScreensTest {
         )
 
         allScreens.forEach { screen ->
-            assertFalse("La ruta no debe contener espacios: ${screen.route}", screen.route.contains(" "))
+            val hasSpaces = screen.route.contains(" ")
+            assertFalse(hasSpaces)
         }
     }
 
     @Test
-    fun `rutas tienen formato consistente`() {
+    fun AppScreens_rutas_formato_consistente() {
         val allScreens = listOf(
             AppScreens.LoginScreen,
             AppScreens.RegistroScreen,
@@ -89,11 +93,10 @@ class AppScreensTest {
             AppScreens.FeedbackScreen
         )
 
+        val pattern = Regex("[a-z_/{}]+")
         allScreens.forEach { screen ->
-            assertTrue(
-                "La ruta debe estar en minúsculas y usar underscores: ${screen.route}",
-                screen.route.matches(Regex("[a-z_/{}]+"))
-            )
+            val matchesPattern = pattern.matches(screen.route)
+            assertTrue(matchesPattern)
         }
     }
 }

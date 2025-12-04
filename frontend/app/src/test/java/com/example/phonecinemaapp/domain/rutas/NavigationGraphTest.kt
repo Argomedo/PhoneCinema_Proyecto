@@ -1,13 +1,12 @@
-// test/navigation/NavigationGraphTest.kt
 package com.example.phonecinemaapp.navigation
 
-import org.junit.Assert.*
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NavigationGraphTest {
 
     @Test
-    fun `grafo de navegacion tiene rutas conectadas logicamente`() {
+    fun grafo_navegacion_rutas_conectadas_logicamente() {
         // Login conecta a Registro y a pantallas principales según rol
         assertTrue("Login debería conectar con Registro", true)
         assertTrue("Login debería conectar con pantallas según rol", true)
@@ -26,7 +25,7 @@ class NavigationGraphTest {
     }
 
     @Test
-    fun `no hay rutas huérfanas en el grafo`() {
+    fun no_hay_rutas_huerfanas_en_grafo() {
         val todasLasRutas = listOf(
             AppScreens.LoginScreen,
             AppScreens.RegistroScreen,
@@ -45,9 +44,13 @@ class NavigationGraphTest {
     }
 
     @Test
-    fun `rutas parametrizadas tienen formato correcto`() {
+    fun rutas_parametrizadas_formato_correcto() {
         val rutaConParametro = AppScreens.ReviewScreen.route
-        assertTrue("La ruta debería contener el parámetro entre llaves", rutaConParametro.contains("{movieId}"))
-        assertTrue("La ruta debería tener el formato correcto", rutaConParametro.matches(Regex(".+\\{.+\\}")))
+
+        assertTrue("La ruta debería contener el parámetro entre llaves",
+            rutaConParametro.contains("{movieId}"))
+
+        assertTrue("La ruta debería tener el formato correcto",
+            rutaConParametro.matches(Regex(".+\\{.+\\}")))
     }
 }

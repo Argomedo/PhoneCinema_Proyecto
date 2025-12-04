@@ -1,37 +1,35 @@
-// test/navigation/NavigationFlowTest.kt
 package com.example.phonecinemaapp.navigation
 
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NavigationFlowTest {
 
     @Test
-    fun `flujo de autenticacion comienza en login`() {
-        // El flujo comienza en LoginScreen
+    fun flujo_autenticacion_comienza_en_login() {
         val rutaInicial = AppScreens.LoginScreen.route
-        assert(rutaInicial == "login_screen")
+        assertTrue(rutaInicial == "login_screen")
     }
 
     @Test
-    fun `usuario puede navegar de login a registro`() {
-        // Desde LoginScreen se puede navegar a RegistroScreen
+    fun usuario_puede_navegar_login_a_registro() {
         val desde = AppScreens.LoginScreen.route
         val hacia = AppScreens.RegistroScreen.route
 
-        assert(desde != hacia)
+        assertNotEquals(desde, hacia)
     }
 
     @Test
-    fun `usuario puede navegar de registro a login`() {
-        // Desde RegistroScreen se puede volver a LoginScreen
+    fun usuario_puede_navegar_registro_a_login() {
         val desde = AppScreens.RegistroScreen.route
         val hacia = AppScreens.LoginScreen.route
 
-        assert(desde != hacia)
+        assertNotEquals(desde, hacia)
     }
 
     @Test
-    fun `flujo principal incluye home y perfil`() {
+    fun flujo_principal_incluye_home_y_perfil() {
         val flujoPrincipal = listOf(
             AppScreens.HomeScreen.route,
             AppScreens.PerfilScreen.route,
@@ -39,27 +37,27 @@ class NavigationFlowTest {
             AppScreens.FeedbackScreen.route
         )
 
-        assert(flujoPrincipal.size >= 2)
+        assertTrue(flujoPrincipal.size >= 2)
     }
 
     @Test
-    fun `flujo administrativo incluye gestion de usuarios y reseñas`() {
+    fun flujo_administrativo_incluye_gestion_usuarios_y_reseñas() {
         val flujoAdministrativo = listOf(
             AppScreens.AdminScreen.route,
             AppScreens.UsersManagementScreen.route,
             AppScreens.ReviewsManagementScreen.route
         )
 
-        assert(flujoAdministrativo.size >= 2)
+        assertTrue(flujoAdministrativo.size >= 2)
     }
 
     @Test
-    fun `flujo de moderador incluye gestion de reseñas`() {
+    fun flujo_moderador_incluye_gestion_reseñas() {
         val flujoModerador = listOf(
             AppScreens.ModeradorScreen.route,
             AppScreens.ReviewsManagementScreen.route
         )
 
-        assert(flujoModerador.size >= 2)
+        assertTrue(flujoModerador.size >= 2)
     }
 }
