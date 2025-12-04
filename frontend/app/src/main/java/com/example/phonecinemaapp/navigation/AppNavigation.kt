@@ -10,26 +10,40 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
 import com.example.phonecinema.data.remote.AuthApi
 import com.example.phonecinema.data.remote.FeedbackApi
-import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinema.data.remote.UserApi
+import com.example.phonecinema.data.remote.PeliculaApi
+import com.example.phonecinema.data.remote.RemoteModule
+
+import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinema.data.repository.ReviewRepository
+
 import com.example.phonecinemaapp.data.repository.AuthRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.data.session.UserSession
+
 import com.example.phonecinemaapp.ui.feedback.FeedbackScreen
 import com.example.phonecinemaapp.ui.feedback.FeedbackViewModel
+
 import com.example.phonecinemaapp.ui.home.HomeScreen
+import com.example.phonecinemaapp.ui.home.HomeViewModel
+import com.example.phonecinemaapp.ui.home.HomeViewModelFactory
+
 import com.example.phonecinemaapp.ui.login.LoginScreen
 import com.example.phonecinemaapp.ui.login.LoginViewModel
+
 import com.example.phonecinemaapp.ui.perfil.PerfilScreen
 import com.example.phonecinemaapp.ui.perfil.PerfilViewModel
+
 import com.example.phonecinemaapp.ui.registro.RegistroScreen
 import com.example.phonecinemaapp.ui.registro.RegistroViewModel
+
 import com.example.phonecinemaapp.ui.resenas.ReviewScreen
 import com.example.phonecinemaapp.ui.resenas.ReviewViewModel
 import com.example.phonecinemaapp.ui.resenas.ReviewViewModelFactory
+
 import com.example.phonecinemaapp.ui.roles.AdminScreen
 import com.example.phonecinemaapp.ui.roles.ManageReviewsScreen
 import com.example.phonecinemaapp.ui.roles.ManageUsersScreen
@@ -41,14 +55,18 @@ fun AppNavigation() {
 
     val navController = rememberNavController()
 
+    // APIs
     val authApi = RemoteModule.createUsuarios(AuthApi::class.java)
     val userApi = RemoteModule.createUsuarios(UserApi::class.java)
     val reviewApi = RemoteModule.createResenas(ReviewApi::class.java)
     val feedbackApi = RemoteModule.createFeedback(FeedbackApi::class.java)
+    val peliculasApi = RemoteModule.createPeliculas(PeliculaApi::class.java)
 
+    // Repositorios correctos
     val authRepository = AuthRepository()
     val userRepository = UserRepository(userApi)
     val reviewRepository = ReviewRepository(reviewApi)
+    val peliculasRepository = PeliculasRepositoryRemote(peliculasApi)
 
     NavHost(
         navController = navController,
@@ -86,9 +104,15 @@ fun AppNavigation() {
             )
         }
 
-        // HOME
+        // HOME – usa HomeViewModelFactory + PeliculasRepositoryRemote
         composable(AppScreens.HomeScreen.route) {
+
+            val homeVm: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(peliculasRepository)
+            )
+
             HomeScreen(
+                homeViewModel = homeVm,
                 onLogout = {
                     UserSession.currentUser = null
                     navController.navigate(AppScreens.LoginScreen.route) {
@@ -103,18 +127,13 @@ fun AppNavigation() {
             )
         }
 
-        // RESEÑAS - RUTA CON movieId
+        // REVIEW
         composable(
             AppScreens.ReviewScreen.route,
             arguments = listOf(navArgument("movieId") { type = NavType.IntType })
         ) { backStackEntry ->
 
             val movieId = backStackEntry.arguments?.getInt("movieId") ?: -1
-
-            // ViewModel opcional, ya no se pasa a la pantalla
-            val vm: ReviewViewModel = viewModel(
-                factory = ReviewViewModelFactory(reviewRepository)
-            )
 
             ReviewScreen(
                 navController = navController,
@@ -132,12 +151,11 @@ fun AppNavigation() {
         // PERFIL
         composable(AppScreens.PerfilScreen.route) {
             val id = UserSession.currentUser?.id ?: return@composable run {
-                navController.navigate(AppScreens.LoginScreen.route) {
-                    popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                }
+                navController.navigate(AppScreens.LoginScreen.route)
             }
 
             val vm = PerfilViewModel(userRepository, reviewRepository)
+
             PerfilScreen(
                 navController = navController,
                 userId = id,
@@ -155,8 +173,8 @@ fun AppNavigation() {
 
         // FEEDBACK
         composable(AppScreens.FeedbackScreen.route) {
-            val feedbackViewModel: FeedbackViewModel = viewModel()
-            FeedbackScreen(viewModel = feedbackViewModel, navController = navController)
+            val vm: FeedbackViewModel = viewModel()
+            FeedbackScreen(viewModel = vm, navController = navController)
         }
 
         // ADMIN
@@ -188,7 +206,7 @@ fun AppNavigation() {
             )
         }
 
-        // USUARIOS
+        // USERS
         composable(AppScreens.UsersManagementScreen.route) {
             ManageUsersScreen(
                 userRepo = userRepository,
@@ -202,10 +220,11 @@ fun AppNavigation() {
             )
         }
 
-        // RESEÑAS ADMIN/MODERADOR
+        // REVIEWS ADMIN/MOD
         composable(AppScreens.ReviewsManagementScreen.route) {
             ManageReviewsScreen(
                 reviewRepo = reviewRepository,
+                peliculasRepo = peliculasRepository,
                 onNavigateBackPanel = { navController.popBackStack() },
                 onLogoutClick = {
                     UserSession.currentUser = null

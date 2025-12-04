@@ -1,7 +1,6 @@
 package com.example.phonecinemaapp.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
@@ -9,43 +8,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.phonecinemaapp.data.remote.PeliculaRemote
+import kotlin.collections.filter
+import kotlin.collections.isNotEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel = viewModel(),
+    homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
     onNavigateToMovieDetails: (Int) -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -71,7 +56,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     if (!isSearching) {
-                        Text("Catálogo", color = Color(0xFFFAFAFA))
+                        Text("Catálogo", color = Color.White)
                     } else {
                         TextField(
                             value = searchQuery,
@@ -86,8 +71,8 @@ fun HomeScreen(
                                 cursorColor = Color.White,
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedPlaceholderColor = Color.White.copy(alpha = 1f),
-                                unfocusedPlaceholderColor = Color.White.copy(alpha = 1f)
+                                focusedPlaceholderColor = Color.White,
+                                unfocusedPlaceholderColor = Color.White
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -95,37 +80,21 @@ fun HomeScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFFD4A106),
-                    titleContentColor = Color(0xFF253B76),
-                    actionIconContentColor = Color(0xFF253B76)
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 ),
                 actions = {
                     IconButton(onClick = { isSearching = !isSearching }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar película",
-                            tint = Color(0xFFFAFAFA)
-                        )
+                        Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
                     }
                     IconButton(onClick = onNavigateToProfile) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Perfil",
-                            tint = Color(0xFFFAFAFA)
-                        )
+                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.White)
                     }
                     IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Cerrar sesión",
-                            tint = Color(0xFFB23A48)
-                        )
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
                     }
                     IconButton(onClick = onNavigateToFeedback) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "Feedback",
-                            tint = Color(0xFFFAFAFA)
-                        )
+                        Icon(Icons.Default.Info, contentDescription = "Feedback", tint = Color.White)
                     }
                 }
             )
@@ -137,9 +106,7 @@ fun HomeScreen(
                 .padding(innerPadding),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            // usamos la versión items(count: Int)
-            items(filteredCategorias.size) { index ->
-                val categoria = filteredCategorias[index]
+            items(filteredCategorias) { categoria ->
 
                 Text(
                     text = categoria.nombre,
@@ -152,8 +119,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(categoria.peliculas.size) { i ->
-                        val pelicula = categoria.peliculas[i]
+                    items(categoria.peliculas) { pelicula ->
                         PeliculaItem(
                             pelicula = pelicula,
                             onMovieClick = { onNavigateToMovieDetails(pelicula.id) }
@@ -173,7 +139,7 @@ fun HomeScreen(
 
 @Composable
 fun PeliculaItem(
-    pelicula: Pelicula,
+    pelicula: PeliculaRemote,
     onMovieClick: (Int) -> Unit
 ) {
     Column(
@@ -186,21 +152,23 @@ fun PeliculaItem(
             modifier = Modifier.size(120.dp, 170.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Image(
-                painter = painterResource(pelicula.posterResId),
+            AsyncImage(
+                model = pelicula.posterUrl,
                 contentDescription = "Poster de ${pelicula.nombre}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         }
+
         Spacer(modifier = Modifier.height(4.dp))
+
         @OptIn(ExperimentalFoundationApi::class)
         Text(
             text = pelicula.nombre,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
-            overflow = TextOverflow.Visible,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.basicMarquee(
                 iterations = Int.MAX_VALUE,
                 animationMode = MarqueeAnimationMode.Immediately,

@@ -3,6 +3,7 @@ package com.example.phonecinemaapp.ui.roles
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Logout
@@ -14,15 +15,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.phonecinema.data.dto.ReviewDto
 import com.example.phonecinema.data.repository.ReviewRepository
-import com.example.phonecinemaapp.data.PeliculaRepository
+import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageReviewsScreen(
     reviewRepo: ReviewRepository,
+    peliculasRepo: PeliculasRepositoryRemote,
     onNavigateBackPanel: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -50,6 +51,7 @@ fun ManageReviewsScreen(
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -62,10 +64,18 @@ fun ManageReviewsScreen(
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(reviews) { review ->
+
+                        val movieName = remember { mutableStateOf("Cargando...") }
+
+                        LaunchedEffect(review.movieId) {
+                            movieName.value = runCatching {
+                                peliculasRepo.getById(review.movieId!!.toInt()).nombre
+                            }.getOrElse { "Película #${review.movieId}" }
+                        }
+
                         ReviewCard(
                             review = review,
-                            movieName = review.movieId?.let { id -> getMovieNameById(id.toInt()) }
-                                ?: "Película desconocida",
+                            movieName = movieName.value,
                             onDelete = {
                                 scope.launch {
                                     runCatching { review.id?.let { id -> reviewRepo.deleteReview(id) } }
@@ -88,10 +98,6 @@ fun ManageReviewsScreen(
             }
         }
     }
-}
-
-private fun getMovieNameById(movieId: Int): String {
-    return PeliculaRepository.getById(movieId)?.nombre ?: "Película #$movieId"
 }
 
 @Composable

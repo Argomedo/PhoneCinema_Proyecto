@@ -64,7 +64,7 @@
             <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- Feign Client ✔ (ahora sí funcionando con el BOM) -->
+        <!-- Feign Client ✔ -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>

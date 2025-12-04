@@ -1,6 +1,5 @@
 package com.example.phonecinemaapp.ui.resenas
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,15 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.phonecinema.data.remote.RemoteModule
-import com.example.phonecinemaapp.data.PeliculaRepository
+import com.example.phonecinemaapp.data.remote.PeliculaRemote
 import com.example.phonecinemaapp.ui.components.AppTopBar
-import com.example.phonecinemaapp.ui.home.Pelicula
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,43 +28,41 @@ fun ReviewScreen(
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
-    // ViewModel inyectado con el repositorio de Retrofit
     val reviewViewModel: ReviewViewModel = viewModel(
         factory = ReviewViewModelFactory(
-            reviewRepository = RemoteModule.reviewRepository
+            reviewRepository = RemoteModule.reviewRepository,
+            peliculasRepository = RemoteModule.peliculasRepository
         )
     )
 
     val uiState by reviewViewModel.uiState.collectAsState()
+    val pelicula by reviewViewModel.pelicula.collectAsState()
 
-    // Película local
-    val pelicula = remember(movieId) { PeliculaRepository.getById(movieId) }
-
-    // Cargar reseñas al entrar
     LaunchedEffect(movieId) {
+        reviewViewModel.loadMovie(movieId)
         reviewViewModel.loadReviews(movieId)
     }
 
     if (pelicula == null) {
-        Text("Película no encontrada", modifier = Modifier.padding(16.dp))
+        Text("Cargando película...", modifier = Modifier.padding(16.dp))
         return
     }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = pelicula.nombre,
+                title = pelicula!!.nombre,
                 navController = navController,
                 showBackButton = true,
                 onBackClick = onBackClick,
                 onLogoutClick = onLogoutClick,
-                onFeedbackClick = { navController.navigate("feedback") }
+                onFeedbackClick = { navController.navigate("feedback_screen") }
             )
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
 
-            MovieHeader(pelicula)
+            MovieHeader(pelicula!!)
 
             ReviewInputSection(
                 rating = uiState.currentRating,
@@ -81,12 +77,8 @@ fun ReviewScreen(
     }
 }
 
-// -----------------------------------------------------------------------------
-// COMPONENTES REUTILIZABLES
-// -----------------------------------------------------------------------------
-
 @Composable
-fun MovieHeader(pelicula: Pelicula) {
+fun MovieHeader(pelicula: PeliculaRemote) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,46 +86,33 @@ fun MovieHeader(pelicula: Pelicula) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = pelicula.posterResId),
+            AsyncImage(
+                model = pelicula.posterUrl,
                 contentDescription = pelicula.nombre,
                 modifier = Modifier
                     .width(120.dp)
-                    .height(180.dp)
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = pelicula.nombre,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(pelicula.nombre, style = MaterialTheme.typography.titleLarge)
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
-                    text = listOfNotNull(
-                        pelicula.genero.takeIf { it.isNotBlank() },
-                        pelicula.duracion.takeIf { it.isNotBlank() },
-                        pelicula.año.takeIf { it != 0 }?.toString()
-                    ).joinToString(" • "),
+                Text("${pelicula.genero} • ${pelicula.duracion} • ${pelicula.anio}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = pelicula.descripcion,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(pelicula.descripcion, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -150,14 +129,11 @@ fun ReviewInputSection(
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Calificación", style = MaterialTheme.typography.titleMedium)
 
-        Row(
-            modifier = Modifier.padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(vertical = 4.dp)) {
             for (i in 1..5) {
                 Icon(
                     imageVector = Icons.Default.Star,
-                    contentDescription = "Estrella de calificación $i",
+                    contentDescription = null,
                     tint = if (i <= rating) Color(0xFFFFC107) else Color.Gray,
                     modifier = Modifier
                         .size(32.dp)
@@ -170,11 +146,8 @@ fun ReviewInputSection(
         OutlinedTextField(
             value = reviewText,
             onValueChange = onReviewTextChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             label = { Text("Tu reseña") },
-            singleLine = false,
             maxLines = 5
         )
 
@@ -196,15 +169,12 @@ fun ReviewsList(reviews: List<ReviewUi>) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
+
         Divider(modifier = Modifier.padding(horizontal = 16.dp))
 
-        LazyColumn(
-            modifier = Modifier.fillMaxHeight(),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxHeight()) {
             items(reviews) { review ->
-                // Usa el ReviewItem definido en ReviewItem.kt
-                ReviewItem(review = review)
+                ReviewItem(review)
             }
         }
     }

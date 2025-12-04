@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinema.data.dto.ReviewDto
 import com.example.phonecinema.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.remote.PeliculaRemote
+import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,11 +17,15 @@ data class ReviewUiState(
 )
 
 class ReviewViewModel(
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val peliculasRepository: PeliculasRepositoryRemote
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
+
+    private val _pelicula = MutableStateFlow<PeliculaRemote?>(null)
+    val pelicula: StateFlow<PeliculaRemote?> = _pelicula.asStateFlow()
 
     fun setRating(value: Int) {
         _uiState.update { it.copy(currentRating = value) }
@@ -27,6 +33,17 @@ class ReviewViewModel(
 
     fun setReviewText(value: String) {
         _uiState.update { it.copy(currentReviewText = value) }
+    }
+
+    fun loadMovie(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                val result = peliculasRepository.getById(movieId)
+                _pelicula.value = result
+            } catch (e: Exception) {
+                _pelicula.value = null
+            }
+        }
     }
 
     fun loadReviews(movieId: Int) {
@@ -39,12 +56,11 @@ class ReviewViewModel(
                         userName = dto.userName ?: "Usuario",
                         rating = dto.rating.toInt(),
                         comment = dto.comment,
-                        timestamp = dto.timestamp ?: "",   // ← ahora String
+                        timestamp = dto.timestamp ?: "",
                         fotoUsuario = dto.fotoUsuario ?: ""
                     )
                 }
 
-                // ordenar por timestamp descendente (string ISO-8601 ordena correctamente)
                 val sorted = mapped.sortedByDescending { it.timestamp }
 
                 _uiState.update { it.copy(reviews = sorted) }
@@ -59,6 +75,7 @@ class ReviewViewModel(
         viewModelScope.launch {
 
             val usuario = UserSession.currentUser ?: return@launch
+
             val dto = ReviewDto(
                 id = null,
                 movieId = movieId.toLong(),
@@ -91,9 +108,7 @@ class ReviewViewModel(
                     )
                 }
 
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (_: Exception) { }
         }
     }
 }

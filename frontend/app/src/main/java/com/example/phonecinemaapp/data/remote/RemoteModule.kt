@@ -2,6 +2,7 @@ package com.example.phonecinema.data.remote
 
 import ReviewApi
 import com.example.phonecinema.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -12,6 +13,8 @@ object RemoteModule {
     private const val BASE_URL_USUARIOS = "http://10.0.2.2:8081/api/"
     private const val BASE_URL_RESENAS = "http://10.0.2.2:8082/"
     private const val BASE_URL_FEEDBACK = "http://10.0.2.2:8083/"
+
+    private const val BASE_URL_PELICULAS = "http://10.0.2.2:8084/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -39,6 +42,14 @@ object RemoteModule {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
+    private val retrofitPeliculas: Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL_PELICULAS)
+        .client(okHttp)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    fun <T> createPeliculas(service: Class<T>): T = retrofitPeliculas.create(service)
+
     // -----------------------------
     // APIS
     // -----------------------------
@@ -53,4 +64,8 @@ object RemoteModule {
 
     val reviewRepository: ReviewRepository =
         ReviewRepository(reviewApi)
+
+    val peliculasRepository: PeliculasRepositoryRemote =
+        PeliculasRepositoryRemote(createPeliculas(PeliculaApi::class.java))
+
 }
