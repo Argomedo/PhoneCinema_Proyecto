@@ -4,41 +4,16 @@ import android.Manifest
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +25,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.phonecinemaapp.navigation.AppScreens
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.utils.RecuerdaFotos
 import kotlinx.coroutines.delay
@@ -63,7 +39,7 @@ fun PerfilScreen(
     perfilViewModel: PerfilViewModel,
     onBackClick: () -> Unit,
     onLogout: () -> Unit,
-    onFeedbackClick: () -> Unit
+    onNavigateToFeedback: () -> Unit
 ) {
     val uiState by perfilViewModel.uiState.collectAsState()
 
@@ -89,7 +65,6 @@ fun PerfilScreen(
         onLogout = perfilViewModel::logout
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,16 +124,15 @@ fun PerfilContent(
 
     Scaffold(
         topBar = {
-            val onFeedbackClick = {
-                navController.navigate("feedback")
-            }
             AppTopBar(
                 title = "Mi Perfil",
                 navController = navController,
                 showBackButton = true,
                 onBackClick = onBackClick,
                 onLogoutClick = onLogout,
-                onFeedbackClick = onFeedbackClick
+                onFeedbackClick = {
+                    navController.navigate(AppScreens.FeedbackScreen.route)
+                }
             )
         }
     ) { innerPadding ->
@@ -171,7 +145,6 @@ fun PerfilContent(
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
 
-                    // FOTO PERFIL
                     SeccionFotoPerfil(
                         fotoUri = uiState.fotoUri,
                         onTakePhoto = { showImageSourceDialog = true }
@@ -268,94 +241,6 @@ fun PerfilContent(
     }
 }
 
-
-@Composable
-fun CambiarPasswordDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, String) -> Unit
-) {
-    var nuevaPassword by remember { mutableStateOf("") }
-    var confirmarPassword by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                "Cambiar Contraseña",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column {
-                if (showError) {
-                    Text(
-                        text = errorMessage,
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-
-                OutlinedTextField(
-                    value = nuevaPassword,
-                    onValueChange = {
-                        nuevaPassword = it
-                        showError = false
-                    },
-                    label = { Text("Nueva contraseña") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = confirmarPassword,
-                    onValueChange = {
-                        confirmarPassword = it
-                        showError = false
-                    },
-                    label = { Text("Confirmar contraseña") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (nuevaPassword.isBlank() || confirmarPassword.isBlank()) {
-                        showError = true
-                        errorMessage = "Ambos campos son obligatorios"
-                    } else if (nuevaPassword != confirmarPassword) {
-                        showError = true
-                        errorMessage = "Las contraseñas no coinciden"
-                    } else if (nuevaPassword.length < 6) {
-                        showError = true
-                        errorMessage = "La contraseña debe tener al menos 6 caracteres"
-                    } else {
-                        onConfirm(nuevaPassword, confirmarPassword)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("CONFIRMAR CAMBIO")
-            }
-        },
-        dismissButton = {
-            OutlinedButton(
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("CANCELAR")
-            }
-        }
-    )
-}
-
 @Composable
 fun SeccionFotoPerfil(
     fotoUri: String,
@@ -384,7 +269,7 @@ fun SeccionFotoPerfil(
             } else {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Avatar por defecto",
+                    contentDescription = "Avatar",
                     tint = Color.White,
                     modifier = Modifier.size(72.dp)
                 )

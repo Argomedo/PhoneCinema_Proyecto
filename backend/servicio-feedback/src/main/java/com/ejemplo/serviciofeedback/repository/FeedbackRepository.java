@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByUsuarioId(Long usuarioId);
-    List<Feedback> findAll();
 }

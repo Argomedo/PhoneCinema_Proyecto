@@ -26,13 +26,14 @@ fun AppTopBar(
     onBackClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     onLogoutClick: () -> Unit,
-    onFeedbackClick: () -> Unit  // Nueva acción para redirigir a la pantalla de feedback
+    onFeedbackClick: () -> Unit
 ) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
     val white = Color(0xFFFAFAFA)
 
     TopAppBar(
         title = { Text(text = title, color = white) },
+
         navigationIcon = {
             if (showBackButton) {
                 IconButton(onClick = onBackClick) {
@@ -52,33 +53,35 @@ fun AppTopBar(
                 }
             }
         },
+
         actions = {
-            // Botón para navegar a la pantalla de perfil
-            IconButton(onClick = {
-                if (currentRoute != AppScreens.PerfilScreen.route) {
+
+            // ICONO PERFIL: se oculta si ya estoy en PerfilScreen
+            if (currentRoute != AppScreens.PerfilScreen.route) {
+                IconButton(onClick = {
                     navController.navigate(AppScreens.PerfilScreen.route) {
                         launchSingleTop = true
                         restoreState = true
                     }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Perfil",
+                        tint = white
+                    )
                 }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Perfil",
-                    tint = white
-                )
             }
 
-            // Botón para ir a la pantalla de Feedback
+            // ICONO FEEDBACK
             IconButton(onClick = onFeedbackClick) {
                 Icon(
-                    imageVector = Icons.Default.Info,  // Ícono para feedback
+                    imageVector = Icons.Default.Info,
                     contentDescription = "Feedback",
                     tint = white
                 )
             }
 
-            // Botón de cerrar sesión
+            // ICONO LOGOUT
             IconButton(onClick = onLogoutClick) {
                 Icon(
                     imageVector = Icons.Default.Logout,
@@ -87,8 +90,9 @@ fun AppTopBar(
                 )
             }
         },
+
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF253B76), // Color de fondo de la barra superior
+            containerColor = Color(0xFF253B76),
             titleContentColor = white,
             navigationIconContentColor = white,
             actionIconContentColor = white

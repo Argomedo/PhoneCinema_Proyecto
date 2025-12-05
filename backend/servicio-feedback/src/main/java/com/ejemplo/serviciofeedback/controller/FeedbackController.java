@@ -26,13 +26,11 @@ public class FeedbackController {
 
     @GetMapping
     public ResponseEntity<List<Feedback>> obtenerFeedbacks() {
-        List<Feedback> feedbacks = feedbackService.obtenerFeedbacks();
-        return ResponseEntity.ok(feedbacks);
+        return ResponseEntity.ok(feedbackService.obtenerFeedbacks());
     }
 
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<Feedback>> obtenerFeedbackPorUsuario(@PathVariable Long usuarioId) {
-        List<Feedback> feedbacks = feedbackService.obtenerFeedbackPorUsuario(usuarioId);
-        return ResponseEntity.ok(feedbacks);
+        return ResponseEntity.ok(feedbackService.obtenerFeedbackPorUsuario(usuarioId));
     }
 }

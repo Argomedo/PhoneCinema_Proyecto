@@ -87,14 +87,17 @@ fun HomeScreen(
                     IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
                     }
+
                     IconButton(onClick = onNavigateToProfile) {
                         Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.White)
                     }
-                    IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
-                    }
+
                     IconButton(onClick = onNavigateToFeedback) {
                         Icon(Icons.Default.Info, contentDescription = "Feedback", tint = Color.White)
+                    }
+
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión", tint = Color(0xFFB23A48))
                     }
                 }
             )

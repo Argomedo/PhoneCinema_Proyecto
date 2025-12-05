@@ -1,9 +1,6 @@
 package com.ejemplo.serviciofeedback.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,16 +9,16 @@ public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long usuarioId;
+    private String nombreUsuario;
     private String mensaje;
     private LocalDateTime fecha;
 
-    // Constructor
     public Feedback() {
-        this.fecha = LocalDateTime.now(); // Fecha actual al crear el objeto
+        this.fecha = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -36,6 +33,14 @@ public class Feedback {
 
     public void setUsuarioId(Long usuarioId) {
         this.usuarioId = usuarioId;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
     public String getMensaje() {

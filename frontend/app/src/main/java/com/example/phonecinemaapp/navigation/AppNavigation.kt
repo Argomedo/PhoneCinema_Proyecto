@@ -167,7 +167,7 @@ fun AppNavigation() {
                         popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 },
-                onFeedbackClick = { navController.navigate(AppScreens.FeedbackScreen.route) }
+                onNavigateToFeedback = { navController.navigate(AppScreens.FeedbackScreen.route) }
             )
         }
 
