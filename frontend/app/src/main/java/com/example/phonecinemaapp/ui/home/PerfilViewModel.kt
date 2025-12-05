@@ -32,6 +32,21 @@ class PerfilViewModel(
 
     private var currentUser = UserSession.currentUser
 
+    init {
+        val user = UserSession.currentUser
+        if (user != null) {
+            _uiState.update {
+                it.copy(
+                    id = user.id,
+                    nombre = user.nombre,
+                    email = user.email,
+                    fotoUri = user.fotoPerfilUrl
+                )
+            }
+            currentUser = user
+        }
+    }
+
     fun cargarUsuario(id: Long) {
         viewModelScope.launch {
             try {
@@ -84,6 +99,28 @@ class PerfilViewModel(
 
         _uiState.update {
             it.copy(successMensaje = "Datos actualizados localmente")
+        }
+    }
+
+    fun cambiarPassword(passwordActual: String, passwordNueva: String) {
+        viewModelScope.launch {
+            try {
+                val userId = _uiState.value.id.toInt()
+
+                userRepository.cambiarPassword(
+                    userId = userId,
+                    actual = passwordActual,
+                    nueva = passwordNueva
+                )
+
+                _uiState.update {
+                    it.copy(successMensaje = "Contraseña actualizada correctamente")
+                }
+            } catch (ex: Exception) {
+                _uiState.update {
+                    it.copy(errorMensaje = "No se pudo cambiar la contraseña")
+                }
+            }
         }
     }
 

@@ -14,4 +14,6 @@ public interface UsuarioService {
     Usuario obtenerPorId(Integer id);   // ✔ agregado
     void eliminarUsuario(Integer id);
     Usuario actualizarRol(Integer id, String nuevoRol);
+    void cambiarPassword(Integer id, String actual, String nueva);
+
 }

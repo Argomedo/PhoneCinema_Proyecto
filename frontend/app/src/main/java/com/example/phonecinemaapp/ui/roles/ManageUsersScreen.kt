@@ -1,6 +1,5 @@
 package com.example.phonecinemaapp.ui.roles
 
-import RolDto
 import UserDto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -47,7 +46,9 @@ fun ManageUsersScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = PhoneCinemaYellow)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PhoneCinemaYellow
+                )
             )
         }
     ) { padding ->
@@ -57,11 +58,14 @@ fun ManageUsersScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+
             if (users.isEmpty()) {
                 Text("No hay usuarios registrados", color = Color.White)
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
                     items(users) { user ->
+
                         UserCard(
                             user = user,
                             onBan = {
@@ -74,7 +78,8 @@ fun ManageUsersScreen(
                             },
                             onToggleRole = {
                                 scope.launch {
-                                    val nuevoRol = when (user.rol.nombre.uppercase()) {
+
+                                    val nuevoRol = when (user.rol.uppercase()) {
                                         "USUARIO" -> "MODERADOR"
                                         "MODERADOR" -> "USUARIO"
                                         else -> "USUARIO"
@@ -82,9 +87,10 @@ fun ManageUsersScreen(
 
                                     runCatching {
                                         userRepo.updateUser(user.id, nuevoRol)
+
                                         users = users.map {
                                             if (it.id == user.id)
-                                                it.copy(rol = RolDto(nuevoRol))
+                                                it.copy(rol = nuevoRol)
                                             else it
                                         }
                                     }
@@ -95,7 +101,7 @@ fun ManageUsersScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = onNavigateBackToAdmin,
@@ -107,6 +113,7 @@ fun ManageUsersScreen(
         }
     }
 }
+
 
 @Composable
 fun UserCard(
@@ -122,6 +129,7 @@ fun UserCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         border = BorderStroke(1.dp, Color(0xFFD4A106).copy(alpha = 0.6f))
     ) {
+
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -145,7 +153,7 @@ fun UserCard(
             Spacer(Modifier.height(2.dp))
 
             Text(
-                text = "Rol actual: ${user.rol.nombre}",
+                text = "Rol actual: ${user.rol}",
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -161,6 +169,7 @@ fun UserCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Text("Acciones", color = Color.Gray)
 
                 Row {
@@ -171,6 +180,7 @@ fun UserCard(
                             tint = Color(0xFFFFC107)
                         )
                     }
+
                     IconButton(onClick = onBan) {
                         Icon(
                             Icons.Default.Block,
@@ -183,3 +193,4 @@ fun UserCard(
         }
     }
 }
+

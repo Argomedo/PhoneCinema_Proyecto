@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -62,7 +61,8 @@ fun PerfilScreen(
         onEmailChange = perfilViewModel::onEmailChange,
         onFotoChange = perfilViewModel::onFotoChange,
         onClearMessages = perfilViewModel::clearMessages,
-        onLogout = perfilViewModel::logout
+        onLogout = perfilViewModel::logout,
+        onChangePassword = perfilViewModel::cambiarPassword
     )
 }
 
@@ -77,13 +77,20 @@ fun PerfilContent(
     onEmailChange: (String) -> Unit,
     onFotoChange: (String) -> Unit,
     onClearMessages: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onChangePassword: (String, String) -> Unit
 ) {
     val context = LocalContext.current
     val fotoPerfil = RecuerdaFotos()
+    val cs = MaterialTheme.colorScheme
 
     var tempImageFile by remember { mutableStateOf<File?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+
+    val softWhite = Color(0xFFDDDDDD)
+    val avatarBlue = Color(0xFF1A2750)
+    val fieldDisabledBg = Color(0xFF2A3350)
 
     val camaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -136,26 +143,42 @@ fun PerfilContent(
             )
         }
     ) { innerPadding ->
+
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxSize()
+                .background(cs.background)
         ) {
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
 
                     SeccionFotoPerfil(
                         fotoUri = uiState.fotoUri,
-                        onTakePhoto = { showImageSourceDialog = true }
+                        onTakePhoto = { showImageSourceDialog = true },
+                        softWhite = softWhite,
+                        avatarBlue = avatarBlue
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // -------------------------------------------------
+                    // CAMPOS NO EDITABLES CON FONDO DISTINTIVO
+                    // -------------------------------------------------
+
                     OutlinedTextField(
                         value = uiState.nombre,
-                        onValueChange = onNombreChange,
-                        label = { Text("Nombre") },
+                        onValueChange = {},
+                        enabled = false,
+                        label = { Text("Usuario", color = softWhite) },
+                        textStyle = LocalTextStyle.current.copy(color = softWhite),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledContainerColor = fieldDisabledBg,
+                            disabledBorderColor = softWhite,
+                            disabledLabelColor = softWhite,
+                            disabledTextColor = softWhite
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -163,34 +186,58 @@ fun PerfilContent(
 
                     OutlinedTextField(
                         value = uiState.email,
-                        onValueChange = onEmailChange,
-                        label = { Text("Email") },
+                        onValueChange = {},
+                        enabled = false,
+                        label = { Text("Email", color = softWhite) },
+                        textStyle = LocalTextStyle.current.copy(color = softWhite),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledContainerColor = fieldDisabledBg,
+                            disabledBorderColor = softWhite,
+                            disabledLabelColor = softWhite,
+                            disabledTextColor = softWhite
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "CONFIRMAR CAMBIOS")
+                    Button(
+                        onClick = onSave,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = cs.primary,
+                            contentColor = softWhite
+                        )
+                    ) {
+                        Text("CONFIRMAR CAMBIOS")
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { showPasswordDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = cs.primary,
+                            contentColor = softWhite
+                        )
+                    ) {
+                        Text("CAMBIAR CONTRASEÑA")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = onLogout,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFB23A48),
-                            contentColor = Color.White
+                            containerColor = Color(0xFFD32F2F),
+                            contentColor = softWhite
                         )
                     ) {
-                        Text(text = "CERRAR SESIÓN")
+                        Text("CERRAR SESIÓN")
                     }
                 }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -198,8 +245,9 @@ fun PerfilContent(
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
-            title = { Text("Seleccionar imagen") },
-            text = { Text("¿De dónde quieres obtener la imagen?") },
+            title = { Text("Seleccionar imagen", color = cs.onSurface) },
+            text = { Text("¿De dónde quieres obtener la imagen?", color = cs.onSurface) },
+            containerColor = cs.surface,
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -209,9 +257,13 @@ fun PerfilContent(
                         onClick = {
                             showImageSourceDialog = false
                             galleryLauncher.launch("image/*")
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = cs.primary,
+                            contentColor = softWhite
+                        )
                     ) {
-                        Icon(Icons.Default.PhotoLibrary, contentDescription = null)
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = softWhite)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Galería")
                     }
@@ -220,14 +272,29 @@ fun PerfilContent(
                         onClick = {
                             showImageSourceDialog = false
                             camaraPermisionLauncher.launch(Manifest.permission.CAMERA)
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = cs.primary,
+                            contentColor = softWhite
+                        )
                     ) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = null)
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = softWhite)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Cámara")
                     }
                 }
             }
+        )
+    }
+
+    if (showPasswordDialog) {
+        CambiarPasswordDialog(
+            onDismiss = { showPasswordDialog = false },
+            onConfirm = { actual, nueva ->
+                onChangePassword(actual, nueva)
+                showPasswordDialog = false
+            },
+            softWhite = softWhite
         )
     }
 
@@ -244,7 +311,9 @@ fun PerfilContent(
 @Composable
 fun SeccionFotoPerfil(
     fotoUri: String,
-    onTakePhoto: () -> Unit
+    onTakePhoto: () -> Unit,
+    softWhite: Color,
+    avatarBlue: Color
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -255,7 +324,7 @@ fun SeccionFotoPerfil(
             modifier = Modifier
                 .size(140.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF3949AB))
+                .background(avatarBlue)
         ) {
             if (fotoUri.isNotBlank()) {
                 AsyncImage(
@@ -270,7 +339,7 @@ fun SeccionFotoPerfil(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Avatar",
-                    tint = Color.White,
+                    tint = softWhite,
                     modifier = Modifier.size(72.dp)
                 )
             }
@@ -278,8 +347,91 @@ fun SeccionFotoPerfil(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = onTakePhoto) {
-            Text(text = "Cambiar foto de perfil")
+        Button(
+            onClick = onTakePhoto,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = softWhite
+            )
+        ) {
+            Text("Cambiar foto de perfil")
         }
     }
+}
+
+@Composable
+fun CambiarPasswordDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit,
+    softWhite: Color
+) {
+    val cs = MaterialTheme.colorScheme
+    var actual by remember { mutableStateOf("") }
+    var nueva by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = cs.surface,
+        title = { Text("Cambiar contraseña", color = cs.onSurface) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = actual,
+                    onValueChange = { actual = it },
+                    label = { Text("Contraseña actual", color = cs.onSurface) },
+                    textStyle = LocalTextStyle.current.copy(color = cs.onSurface),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = cs.primary,
+                        unfocusedBorderColor = cs.onSurface.copy(alpha = 0.4f),
+                        cursorColor = cs.primary
+                    ),
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = nueva,
+                    onValueChange = { nueva = it },
+                    label = { Text("Nueva contraseña", color = cs.onSurface) },
+                    textStyle = LocalTextStyle.current.copy(color = cs.onSurface),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = cs.primary,
+                        unfocusedBorderColor = cs.onSurface.copy(alpha = 0.4f),
+                        cursorColor = cs.primary
+                    ),
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (actual.isNotBlank() && nueva.isNotBlank()) {
+                        onConfirm(actual, nueva)
+                    }
+                    onDismiss()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = cs.primary,
+                    contentColor = softWhite
+                )
+            ) {
+                Text("Confirmar")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = cs.onSurface.copy(alpha = 0.2f),
+                    contentColor = cs.onSurface
+                )
+            ) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

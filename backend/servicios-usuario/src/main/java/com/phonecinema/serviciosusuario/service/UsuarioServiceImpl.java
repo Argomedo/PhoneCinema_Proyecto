@@ -102,4 +102,24 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new IllegalArgumentException("La contraseña no cumple requisitos");
         }
     }
+
+    @Override
+public void cambiarPassword(Integer id, String actual, String nueva) {
+
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    // Validar contraseña actual
+    if (!passwordEncoder.matches(actual, usuario.getPassword())) {
+        throw new RuntimeException("La contraseña actual es incorrecta");
+    }
+
+    // Validar nueva contraseña con tus reglas
+    validarPassword(nueva);
+
+    // Guardar contraseña nueva encriptada
+    usuario.setPassword(passwordEncoder.encode(nueva));
+    usuarioRepository.save(usuario);
+}
+
 }

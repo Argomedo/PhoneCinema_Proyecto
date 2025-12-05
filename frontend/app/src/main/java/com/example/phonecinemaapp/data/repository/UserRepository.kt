@@ -4,6 +4,7 @@ import UserDto
 import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinema.data.remote.UserApi
 import com.example.phonecinemaapp.data.local.user.UserEntity
+import com.example.phonecinemaapp.data.remote.dto.CambiarPasswordRequest
 import com.example.phonecinemaapp.data.session.UserSession
 
 data class UsuarioRegistroDTO(
@@ -29,7 +30,8 @@ class UserRepository(userApi: UserApi) {
     suspend fun updateUser(id: Long, nuevoRol: String) =
         api.update(id.toString(), nuevoRol)
 
-    suspend fun getUserById(id: Long): UserDto = api.getById(id.toString())
+    suspend fun getUserById(id: Long): UserDto =
+        api.getById(id.toString())
 
     suspend fun register(nombre: String, email: String, password: String): Result<UserDto> =
         try {
@@ -42,4 +44,22 @@ class UserRepository(userApi: UserApi) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+
+    // ✔ Corrección: userId debe ser Long y el path debe enviarse como String
+    suspend fun cambiarPassword(
+        userId: Int,
+        actual: String,
+        nueva: String
+    ) {
+        val body = CambiarPasswordRequest(
+            passwordActual = actual,
+            passwordNueva = nueva
+        )
+
+        api.cambiarPassword(
+            id = userId.toString(),
+            body = body
+        )
+    }
 }
+

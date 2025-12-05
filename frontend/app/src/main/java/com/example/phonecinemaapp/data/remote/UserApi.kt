@@ -1,6 +1,7 @@
 package com.example.phonecinema.data.remote
 
 import UserDto
+import com.example.phonecinemaapp.data.remote.dto.CambiarPasswordRequest
 import com.example.phonecinemaapp.data.repository.UsuarioRegistroDTO
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -29,4 +30,11 @@ interface UserApi {
 
     @POST("usuarios/registrar")
     suspend fun register(@Body body: UsuarioRegistroDTO): UserDto
+
+    // ✔ NUEVO ENDPOINT: cambiar contraseña
+    @PUT("usuarios/{id}/password")
+    suspend fun cambiarPassword(
+        @Path("id") id: String,
+        @Body body: CambiarPasswordRequest
+    )
 }

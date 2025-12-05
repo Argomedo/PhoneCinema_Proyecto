@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.phonecinema.serviciosusuario.dto.LoginDTO;
 import com.phonecinema.serviciosusuario.dto.AuthResponseDTO;
+import com.phonecinema.serviciosusuario.dto.CambiarPasswordDTO;
 import com.phonecinema.serviciosusuario.dto.TokenDTO;
 import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
 import com.phonecinema.serviciosusuario.model.Usuario;
@@ -58,4 +59,18 @@ public class UsuarioController {
                                  @RequestParam String rol) {
         return usuarioService.actualizarRol(id, rol);
     }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<?> cambiarPassword(
+        @PathVariable Integer id,
+        @RequestBody CambiarPasswordDTO dto) {
+
+    try {
+        usuarioService.cambiarPassword(id, dto.getPasswordActual(), dto.getPasswordNueva());
+        return ResponseEntity.ok("Contraseña actualizada correctamente");
+    } catch (RuntimeException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+}
+
 }
