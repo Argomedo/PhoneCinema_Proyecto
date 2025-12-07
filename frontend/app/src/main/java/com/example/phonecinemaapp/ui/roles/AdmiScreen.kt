@@ -32,6 +32,7 @@ fun AdminScreen(
     navController: NavController,
     onNavigateToUsers: () -> Unit,
     onNavigateToReviews: () -> Unit,
+    onNavigateToMovies: () -> Unit,  // <-- Para Navegar a peliculas
     onLogout: () -> Unit
 ) {
     Scaffold(
@@ -75,6 +76,16 @@ fun AdminScreen(
             ) {
                 Text("Administrar Usuarios", color = Color(0xFF253B76))
             }
+            // NUEVO de aqui hasta el otro spacer - Gestionar Películas
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onNavigateToMovies,  // <-- ESTA ES LA NUEVA LÍNEA
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = PhoneCinemaYellow)
+            ) {
+                Text("Gestionar Películas", color = Color(0xFF253B76))
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -98,4 +109,3 @@ fun AdminScreen(
         }
     }
 }
-

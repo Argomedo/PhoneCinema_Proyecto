@@ -41,13 +41,12 @@ import com.example.phonecinemaapp.ui.registro.RegistroScreen
 import com.example.phonecinemaapp.ui.registro.RegistroViewModel
 
 import com.example.phonecinemaapp.ui.resenas.ReviewScreen
-import com.example.phonecinemaapp.ui.resenas.ReviewViewModel
-import com.example.phonecinemaapp.ui.resenas.ReviewViewModelFactory
 
 import com.example.phonecinemaapp.ui.roles.AdminScreen
 import com.example.phonecinemaapp.ui.roles.ManageReviewsScreen
 import com.example.phonecinemaapp.ui.roles.ManageUsersScreen
 import com.example.phonecinemaapp.ui.roles.ModeradorScreen
+import com.example.phonecinemaapp.ui.roles.ManageMovieScreen // <-- NUEVA IMPORTACIÓN
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
@@ -183,6 +182,7 @@ fun AppNavigation() {
                 navController = navController,
                 onNavigateToUsers = { navController.navigate(AppScreens.UsersManagementScreen.route) },
                 onNavigateToReviews = { navController.navigate(AppScreens.ReviewsManagementScreen.route) },
+                onNavigateToMovies = { navController.navigate(AppScreens.ManageMovieScreen.route) }, // <-- NUEVO PARÁMETRO AÑADIDO
                 onLogout = {
                     UserSession.currentUser = null
                     navController.navigate(AppScreens.LoginScreen.route) {
@@ -197,6 +197,7 @@ fun AppNavigation() {
             ModeradorScreen(
                 navController = navController,
                 onNavigateToReviews = { navController.navigate(AppScreens.ReviewsManagementScreen.route) },
+                onNavigateToMovies = { navController.navigate(AppScreens.ManageMovieScreen.route) }, // <-- NUEVO PARÁMETRO AÑADIDO
                 onLogoutClick = {
                     UserSession.currentUser = null
                     navController.navigate(AppScreens.LoginScreen.route) {
@@ -234,6 +235,19 @@ fun AppNavigation() {
                 }
             )
         }
+// En AppNavigation.kt, en el composable de ManageMovieScreen:
+        composable(AppScreens.ManageMovieScreen.route) {
+            ManageMovieScreen(
+                peliculasRepository = peliculasRepository, // <-- Pasa el repositorio
+                onNavigateBackPanel = { navController.popBackStack() },
+                onLogoutClick = {
+                    UserSession.currentUser = null
+                    navController.navigate(AppScreens.LoginScreen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -246,6 +260,7 @@ sealed class AppScreens(val route: String) {
     object ModeradorScreen : AppScreens("moderador_screen")
     object UsersManagementScreen : AppScreens("users_management_screen")
     object ReviewsManagementScreen : AppScreens("reviews_management_screen")
+    object ManageMovieScreen : AppScreens("manage_movie_screen") // <-- NUEVA PANTALLA AÑADIDA
 
     object ReviewScreen : AppScreens("review_screen/{movieId}") {
         fun createRoute(movieId: Int) = "review_screen/$movieId"

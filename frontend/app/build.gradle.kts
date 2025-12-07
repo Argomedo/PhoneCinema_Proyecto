@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3)
     implementation(libs.ads.mobile.sdk)
+    implementation(libs.androidx.foundation)
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Imágenes y utilidades

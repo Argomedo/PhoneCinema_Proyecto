@@ -16,6 +16,7 @@ import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 fun ModeradorScreen(
     navController: NavController,
     onNavigateToReviews: () -> Unit,
+    onNavigateToMovies: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Scaffold(
@@ -52,6 +53,17 @@ fun ModeradorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Gestionar Películas -- Nuevo
+            Button(
+                onClick = onNavigateToMovies,  // <-- ESTA ES LA NUEVA LÍNEA
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = PhoneCinemaYellow)
+            ) {
+                Text("Gestionar Películas", color = Color(0xFF253B76))
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Button(
                 onClick = onNavigateToReviews,
                 modifier = Modifier.fillMaxWidth(),
@@ -72,5 +84,4 @@ fun ModeradorScreen(
         }
     }
 }
-
 

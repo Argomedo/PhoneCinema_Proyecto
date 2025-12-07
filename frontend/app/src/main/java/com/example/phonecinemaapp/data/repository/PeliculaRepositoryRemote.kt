@@ -19,4 +19,17 @@ class PeliculasRepositoryRemote(
     suspend fun getByGenero(genero: String): List<PeliculaRemote> {
         return api.getByGenero(genero)
     }
+
+    // TODO: Agregar cuando tu API tenga estos métodos
+    suspend fun save(pelicula: PeliculaRemote): PeliculaRemote {
+        return api.create(pelicula)
+    }
+
+    suspend fun update(id: Int, pelicula: PeliculaRemote): PeliculaRemote {
+        return api.update(id, pelicula)
+    }
+
+    suspend fun delete(id: Int) {
+        api.delete(id)
+    }
 }
