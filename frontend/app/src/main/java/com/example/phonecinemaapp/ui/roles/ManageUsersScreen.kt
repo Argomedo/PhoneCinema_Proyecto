@@ -15,9 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.phonecinemaapp.data.remote.dto.RolDto
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
 import kotlinx.coroutines.launch
+import java.util.Locale     // ← IMPORT NECESARIO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +81,7 @@ fun ManageUsersScreen(
                             onToggleRole = {
                                 scope.launch {
 
-                                    val nuevoRol = when (user.rol.uppercase()) {
+                                    val nuevoRol = when (user.rol.nombre.uppercase()) {
                                         "USUARIO" -> "MODERADOR"
                                         "MODERADOR" -> "USUARIO"
                                         else -> "USUARIO"
@@ -88,10 +90,15 @@ fun ManageUsersScreen(
                                     runCatching {
                                         userRepo.updateUser(user.id, nuevoRol)
 
-                                        users = users.map {
-                                            if (it.id == user.id)
-                                                it.copy(rol = nuevoRol)
-                                            else it
+                                        users = users.map { u ->
+                                            if (u.id == user.id) {
+                                                u.copy(
+                                                    rol = RolDto(
+                                                        idRol = u.rol.idRol,   // mantiene el ID del rol original
+                                                        nombre = nuevoRol      // cambia solo el nombre
+                                                    )
+                                                )
+                                            } else u
                                         }
                                     }
                                 }
@@ -193,4 +200,3 @@ fun UserCard(
         }
     }
 }
-
