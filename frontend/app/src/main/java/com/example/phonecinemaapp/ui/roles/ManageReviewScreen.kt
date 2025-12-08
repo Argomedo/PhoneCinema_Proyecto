@@ -69,7 +69,7 @@ fun ManageReviewsScreen(
 
                         LaunchedEffect(review.movieId) {
                             movieName.value = runCatching {
-                                peliculasRepo.getById(review.movieId!!.toInt()).nombre
+                                peliculasRepo.getById(review.movieId!!.toLong()).nombre
                             }.getOrElse { "Película #${review.movieId}" }
                         }
 

@@ -1,7 +1,8 @@
 package com.example.phonecinemaapp.data.repository
 
-import AuthResponseDto
 import com.example.phonecinema.data.dto.AuthRequestDto
+import com.example.phonecinema.data.dto.AuthResponseDto
+
 import com.example.phonecinema.data.remote.AuthApi
 import com.example.phonecinema.data.remote.RemoteModule
 import com.example.phonecinemaapp.data.local.user.UserEntity

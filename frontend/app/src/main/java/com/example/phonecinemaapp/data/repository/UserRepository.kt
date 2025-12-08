@@ -62,4 +62,3 @@ class UserRepository(userApi: UserApi) {
         )
     }
 }
-

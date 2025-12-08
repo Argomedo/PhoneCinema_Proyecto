@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinema.data.dto.ReviewDto
 import com.example.phonecinema.data.repository.ReviewRepository
-import com.example.phonecinemaapp.data.remote.PeliculaRemote
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
 import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinemaapp.data.session.UserSession
 import kotlinx.coroutines.flow.*
@@ -24,8 +24,9 @@ class ReviewViewModel(
     private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
 
-    private val _pelicula = MutableStateFlow<PeliculaRemote?>(null)
-    val pelicula: StateFlow<PeliculaRemote?> = _pelicula.asStateFlow()
+    // Película cargada REAL desde el backend
+    private val _pelicula = MutableStateFlow<PeliculaDTO?>(null)
+    val pelicula: StateFlow<PeliculaDTO?> = _pelicula.asStateFlow()
 
     fun setRating(value: Int) {
         _uiState.update { it.copy(currentRating = value) }
@@ -38,7 +39,7 @@ class ReviewViewModel(
     fun loadMovie(movieId: Int) {
         viewModelScope.launch {
             try {
-                val result = peliculasRepository.getById(movieId)
+                val result = peliculasRepository.getById(movieId.toLong())
                 _pelicula.value = result
             } catch (e: Exception) {
                 _pelicula.value = null

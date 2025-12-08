@@ -1,12 +1,14 @@
 package com.example.phonecinemaapp.ui.roles
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
+import com.example.phonecinemaapp.data.remote.dto.PeliculaCreateDTO
 import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaBlue
 import com.example.phonecinemaapp.ui.theme.PhoneCinemaYellow
@@ -22,21 +26,19 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageMovieScreen(
-    peliculasRepository: PeliculasRepositoryRemote, // <-- Recibe el repositorio
+    peliculasRepository: PeliculasRepositoryRemote,
     onNavigateBackPanel: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var movies by remember { mutableStateOf<List<MoviePlaceholder>>(emptyList()) }
+    var movies by remember { mutableStateOf<List<PeliculaDTO>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
 
-    // Cargar películas cuando se abre la pantalla
     LaunchedEffect(Unit) {
-        // Por ahora usa datos de ejemplo, después puedes usar:
-        // movies = peliculasRepository.getAll().map { it.toPlaceholder() }
-        movies = getSampleMovies()
+        isLoading = true
+        movies = peliculasRepository.getAll()
         isLoading = false
     }
 
@@ -44,13 +46,10 @@ fun ManageMovieScreen(
         containerColor = PhoneCinemaBlue,
         topBar = {
             TopAppBar(
-                title = {
-                    Text("Gestión de Películas", color = Color.White)
-                },
+                title = { Text("Gestión de Películas", color = Color.White) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = PhoneCinemaYellow,
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    titleContentColor = Color.White
                 ),
                 actions = {
                     IconButton(onClick = { showAddDialog = true }) {
@@ -63,105 +62,70 @@ fun ManageMovieScreen(
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Barra de búsqueda
+
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Buscar películas") },
+                placeholder = { Text("Buscar por título o género") },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = PhoneCinemaYellow,
                     unfocusedIndicatorColor = Color.Gray,
-                    cursorColor = PhoneCinemaYellow,
                     focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray
+                    unfocusedTextColor = Color.White
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar", tint = PhoneCinemaYellow)
-                }
+                    .padding(16.dp)
             )
 
             if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = PhoneCinemaYellow)
                 }
             } else {
-                // Filtrar películas por búsqueda
-                val filteredMovies = if (searchQuery.isBlank()) {
-                    movies
-                } else {
-                    movies.filter {
-                        it.title.contains(searchQuery, ignoreCase = true) ||
-                                it.genre.contains(searchQuery, ignoreCase = true)
-                    }
+                val filtered = movies.filter {
+                    searchQuery.isBlank() ||
+                            it.nombre.contains(searchQuery, ignoreCase = true) ||
+                            it.genero.contains(searchQuery, ignoreCase = true)
                 }
 
-                // Lista de películas
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (filteredMovies.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    "No hay películas",
-                                    color = Color.Gray
-                                )
-                            }
-                        }
-                    } else {
-                        items(filteredMovies) { movie ->
-                            MovieManagementItem(
-                                movie = movie,
-                                onEdit = {
-                                    // TODO: Abrir diálogo de edición cuando tengas API
-                                },
-                                onDelete = {
-                                    scope.launch {
-                                        // TODO: Implementar cuando tengas API
-                                        // peliculasRepository.delete(movie.id)
-                                        movies = movies.filter { it.id != movie.id }
-                                    }
+                    items(filtered) { movie ->
+                        MovieManagementItem(
+                            movie = movie,
+                            onDelete = {
+                                scope.launch {
+                                    peliculasRepository.delete(movie.id)
+                                    movies = movies.filter { it.id != movie.id }
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
             }
         }
     }
 
-    // Diálogo para agregar película (placeholder)
     if (showAddDialog) {
-        AddMovieDialogPlaceholder(
+        AddMovieDialog(
             onDismiss = { showAddDialog = false },
-            onSave = { newMovie ->
+            onSave = { dto ->
                 scope.launch {
-                    // TODO: Implementar cuando tengas API
-                    // val saved = peliculasRepository.save(newMovie.toPeliculaRemote())
-                    movies = movies + newMovie
+                    val saved = peliculasRepository.create(dto)
+                    movies = movies + saved
                 }
                 showAddDialog = false
             }
@@ -169,172 +133,100 @@ fun ManageMovieScreen(
     }
 }
 
-// Data class para películas (placeholder - cambiar por PeliculaRemote cuando tengas API)
-data class MoviePlaceholder(
-    val id: Int,
-    val title: String,
-    val genre: String,
-    val duration: Int,
-    val year: Int,
-    val description: String = ""
-)
-
-// Función de ejemplo - remover cuando tengas API
-private fun getSampleMovies(): List<MoviePlaceholder> {
-    return listOf(
-        MoviePlaceholder(
-            id = 1,
-            title = "El Padrino",
-            genre = "Drama/Crimen",
-            duration = 175,
-            year = 1972,
-            description = "La historia de la familia mafiosa Corleone"
-        ),
-        MoviePlaceholder(
-            id = 2,
-            title = "Interestelar",
-            genre = "Ciencia Ficción",
-            duration = 169,
-            year = 2014,
-            description = "Viaje a través de un agujero de gusano"
-        ),
-        MoviePlaceholder(
-            id = 3,
-            title = "El Señor de los Anillos",
-            genre = "Fantasía/Aventura",
-            duration = 178,
-            year = 2001,
-            description = "Un hobbit destruye un anillo poderoso"
-        )
-    )
-}
-
 @Composable
 fun MovieManagementItem(
-    movie: MoviePlaceholder,
-    onEdit: () -> Unit,
+    movie: PeliculaDTO,
     onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E)
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono de película
+
             Box(
                 modifier = Modifier
                     .size(60.dp)
                     .background(PhoneCinemaYellow.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Movie,
-                    contentDescription = "Película",
-                    tint = PhoneCinemaYellow,
-                    modifier = Modifier.size(30.dp)
-                )
+                Icon(Icons.Default.Movie, contentDescription = null, tint = PhoneCinemaYellow)
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(Modifier.width(16.dp))
 
-            // Información de la película
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    text = movie.title,
+                    movie.nombre,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
-                    text = "${movie.genre} • ${movie.duration} min • ${movie.year}",
+                    "${movie.genero} • ${movie.duracion} • ${movie.anio}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
             }
 
-            // Botones de acción
-            Row {
-                IconButton(
-                    onClick = onEdit,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = PhoneCinemaYellow
-                    )
-                }
-
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        tint = Color(0xFFB23A48)
-                    )
-                }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color(0xFFB23A48))
             }
         }
     }
 }
 
-// Diálogo placeholder simple
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMovieDialogPlaceholder(
+fun AddMovieDialog(
     onDismiss: () -> Unit,
-    onSave: (MoviePlaceholder) -> Unit
+    onSave: (PeliculaCreateDTO) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var genero by remember { mutableStateOf("") }
+    var duracion by remember { mutableStateOf("") }
+    var anio by remember { mutableStateOf("") }
+    var posterUrl by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Agregar Película") },
         text = {
-            TextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Título") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+                TextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") })
+                TextField(value = genero, onValueChange = { genero = it }, label = { Text("Género") })
+                TextField(value = duracion, onValueChange = { duracion = it }, label = { Text("Duración (ej: 2h 10m)") })
+                TextField(value = anio, onValueChange = { anio = it }, label = { Text("Año") })
+                TextField(value = posterUrl, onValueChange = { posterUrl = it }, label = { Text("Poster URL") })
+            }
         },
         confirmButton = {
             TextButton(
+                enabled = nombre.isNotBlank() && genero.isNotBlank(),
                 onClick = {
-                    val newMovie = MoviePlaceholder(
-                        id = 0, // Temporal
-                        title = title,
-                        genre = "",
-                        duration = 0,
-                        year = 0
+                    onSave(
+                        PeliculaCreateDTO(
+                            nombre = nombre,
+                            descripcion = descripcion,
+                            genero = genero,
+                            duracion = duracion,
+                            anio = anio.toIntOrNull() ?: 0,
+                            posterUrl = posterUrl
+                        )
                     )
-                    onSave(newMovie)
-                },
-                enabled = title.isNotBlank()
-            ) {
-                Text("Agregar")
-            }
+                }
+            ) { Text("Guardar") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         }
     )
 }

@@ -23,9 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.phonecinemaapp.data.remote.PeliculaRemote
-import kotlin.collections.filter
-import kotlin.collections.isNotEmpty
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,7 +123,7 @@ fun HomeScreen(
                     items(categoria.peliculas) { pelicula ->
                         PeliculaItem(
                             pelicula = pelicula,
-                            onMovieClick = { onNavigateToMovieDetails(pelicula.id) }
+                            onMovieClick = { onNavigateToMovieDetails(pelicula.id.toInt()) }
                         )
                     }
                 }
@@ -142,13 +140,13 @@ fun HomeScreen(
 
 @Composable
 fun PeliculaItem(
-    pelicula: PeliculaRemote,
+    pelicula: PeliculaDTO,
     onMovieClick: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
             .width(120.dp)
-            .clickable { onMovieClick(pelicula.id) },
+            .clickable { onMovieClick(pelicula.id.toInt()) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(

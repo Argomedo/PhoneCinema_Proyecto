@@ -17,7 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.phonecinema.data.remote.RemoteModule
-import com.example.phonecinemaapp.data.remote.PeliculaRemote
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
 import com.example.phonecinemaapp.ui.components.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +78,7 @@ fun ReviewScreen(
 }
 
 @Composable
-fun MovieHeader(pelicula: PeliculaRemote) {
+fun MovieHeader(pelicula: PeliculaDTO) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,7 +105,8 @@ fun MovieHeader(pelicula: PeliculaRemote) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text("${pelicula.genero} • ${pelicula.duracion} • ${pelicula.anio}",
+                Text(
+                    "${pelicula.genero} • ${pelicula.duracion} • ${pelicula.anio}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
@@ -146,7 +147,9 @@ fun ReviewInputSection(
         OutlinedTextField(
             value = reviewText,
             onValueChange = onReviewTextChange,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             label = { Text("Tu reseña") },
             maxLines = 5
         )

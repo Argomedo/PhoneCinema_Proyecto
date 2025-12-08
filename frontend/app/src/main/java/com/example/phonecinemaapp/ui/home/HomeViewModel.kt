@@ -2,7 +2,7 @@ package com.example.phonecinemaapp.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phonecinemaapp.data.remote.PeliculaRemote
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
 import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 data class Categoria(
     val nombre: String,
-    val peliculas: List<PeliculaRemote>
+    val peliculas: List<PeliculaDTO>
 )
 
 data class HomeUiState(
@@ -28,12 +28,12 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    fun loadUser(nombre: String) {
-        _uiState.value = _uiState.value.copy(nombreUsuario = nombre)
-    }
-
     init {
         cargarPeliculas()
+    }
+
+    fun loadUser(nombre: String) {
+        _uiState.value = _uiState.value.copy(nombreUsuario = nombre)
     }
 
     private fun cargarPeliculas() {
@@ -41,17 +41,16 @@ class HomeViewModel(
             try {
                 _uiState.value = _uiState.value.copy(loading = true)
 
-                val peliculas: List<PeliculaRemote> = repository.getAllPeliculas()
+                val peliculas: List<PeliculaDTO> = repository.getAll()
 
-                val categorias: List<Categoria> =
-                    peliculas
-                        .groupBy { it.genero }
-                        .map { (genero, lista) ->
-                            Categoria(
-                                nombre = genero,
-                                peliculas = lista
-                            )
-                        }
+                val categorias = peliculas
+                    .groupBy { it.genero }
+                    .map { (genero, lista) ->
+                        Categoria(
+                            nombre = genero,
+                            peliculas = lista
+                        )
+                    }
 
                 _uiState.value = HomeUiState(
                     categorias = categorias,

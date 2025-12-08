@@ -1,32 +1,34 @@
-package com.example.phonecinema.data.remote
+package com.example.phonecinemaapp.data.remote
 
-import com.example.phonecinemaapp.data.remote.PeliculaRemote
-import retrofit2.http.Body //dependencia nueva
-import retrofit2.http.DELETE //dependencia nueva
-import retrofit2.http.GET
-import retrofit2.http.POST //dependencia nueva
-import retrofit2.http.PUT //dependencia nueva
-import retrofit2.http.Path
+import com.example.phonecinemaapp.data.remote.dto.PeliculaDTO
+import com.example.phonecinemaapp.data.remote.dto.PeliculaCreateDTO
+import com.example.phonecinemaapp.data.remote.dto.PeliculaUpdateDTO
+import retrofit2.http.*
 
 interface PeliculaApi {
 
+    // ---------- GET ----------
     @GET("api/peliculas")
-    suspend fun getAll(): List<PeliculaRemote>
+    suspend fun getAll(): List<PeliculaDTO>
 
     @GET("api/peliculas/{id}")
-    suspend fun getById(@Path("id") id: Int): PeliculaRemote
+    suspend fun getById(@Path("id") id: Long): PeliculaDTO
 
     @GET("api/peliculas/genero/{genero}")
-    suspend fun getByGenero(@Path("genero") genero: String): List<PeliculaRemote>
+    suspend fun getByGenero(@Path("genero") genero: String): List<PeliculaDTO>
 
-    //Lo nuevo para agregar/actualizar y eliminar
-
+    // ---------- POST ----------
     @POST("api/peliculas")
-    suspend fun create(@Body pelicula: PeliculaRemote): PeliculaRemote
+    suspend fun create(@Body dto: PeliculaCreateDTO): PeliculaDTO
 
+    // ---------- PUT ----------
     @PUT("api/peliculas/{id}")
-    suspend fun update(@Path("id") id: Int, @Body pelicula: PeliculaRemote): PeliculaRemote
+    suspend fun update(
+        @Path("id") id: Long,
+        @Body dto: PeliculaUpdateDTO
+    ): PeliculaDTO
 
+    // ---------- DELETE ----------
     @DELETE("api/peliculas/{id}")
-    suspend fun delete(@Path("id") id: Int)
+    suspend fun delete(@Path("id") id: Long)
 }

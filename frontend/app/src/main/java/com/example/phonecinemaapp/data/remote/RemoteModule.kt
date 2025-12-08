@@ -2,6 +2,7 @@ package com.example.phonecinema.data.remote
 
 import ReviewApi
 import com.example.phonecinema.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.remote.PeliculaApi
 import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -13,7 +14,6 @@ object RemoteModule {
     private const val BASE_URL_USUARIOS = "http://10.0.2.2:8081/api/"
     private const val BASE_URL_RESENAS = "http://10.0.2.2:8082/"
     private const val BASE_URL_FEEDBACK = "http://10.0.2.2:8083/"
-
     private const val BASE_URL_PELICULAS = "http://10.0.2.2:8084/"
 
     private val logging = HttpLoggingInterceptor().apply {
@@ -23,6 +23,10 @@ object RemoteModule {
     private val okHttp = OkHttpClient.Builder()
         .addInterceptor(logging)
         .build()
+
+    // -----------------------------
+    // RETROFIT INSTANCES
+    // -----------------------------
 
     private val retrofitUsuarios: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL_USUARIOS)
@@ -48,24 +52,34 @@ object RemoteModule {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    fun <T> createPeliculas(service: Class<T>): T = retrofitPeliculas.create(service)
+    // -----------------------------
+    // HELPERS
+    // -----------------------------
+
+    fun <T> createPeliculas(service: Class<T>): T =
+        retrofitPeliculas.create(service)
+
+    fun <T> createUsuarios(service: Class<T>): T =
+        retrofitUsuarios.create(service)
+
+    fun <T> createResenas(service: Class<T>): T =
+        retrofitResenas.create(service)
+
+    fun <T> createFeedback(service: Class<T>): T =
+        retrofitFeedback.create(service)
 
     // -----------------------------
-    // APIS
+    // REPOSITORIES
     // -----------------------------
-    fun <T> createUsuarios(service: Class<T>): T = retrofitUsuarios.create(service)
-    fun <T> createResenas(service: Class<T>): T = retrofitResenas.create(service)
-    fun <T> createFeedback(service: Class<T>): T = retrofitFeedback.create(service)
 
-    // -----------------------------
-    // RESEÑAS → API + REPOSITORY
-    // -----------------------------
-    val reviewApi: ReviewApi = createResenas(ReviewApi::class.java)
+    val reviewApi: ReviewApi =
+        createResenas(ReviewApi::class.java)
 
     val reviewRepository: ReviewRepository =
         ReviewRepository(reviewApi)
 
     val peliculasRepository: PeliculasRepositoryRemote =
-        PeliculasRepositoryRemote(createPeliculas(PeliculaApi::class.java))
-
+        PeliculasRepositoryRemote(
+            createPeliculas(PeliculaApi::class.java)
+        )
 }

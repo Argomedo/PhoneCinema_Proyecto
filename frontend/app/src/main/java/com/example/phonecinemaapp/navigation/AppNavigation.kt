@@ -14,11 +14,11 @@ import androidx.navigation.navArgument
 import com.example.phonecinema.data.remote.AuthApi
 import com.example.phonecinema.data.remote.FeedbackApi
 import com.example.phonecinema.data.remote.UserApi
-import com.example.phonecinema.data.remote.PeliculaApi
 import com.example.phonecinema.data.remote.RemoteModule
 
 import com.example.phonecinemaapp.data.repository.PeliculasRepositoryRemote
 import com.example.phonecinema.data.repository.ReviewRepository
+import com.example.phonecinemaapp.data.remote.PeliculaApi
 
 import com.example.phonecinemaapp.data.repository.AuthRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
