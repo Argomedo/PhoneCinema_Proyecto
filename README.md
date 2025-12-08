@@ -1,280 +1,121 @@
--Nombres de DB: resenas_db, usuarios _db y feedback_db
+Bases de Datos Utilizadas
 
-- CREAR ANTES DE INICIAR LOS PROCESOS LA BASE DE DATOS CORRESPONDIENTE A CÓMO ESTÁ GUARDADA EN LOS APPLICATION PROPERTIES-
+La aplicación trabaja con cuatro bases de datos separadas, una por microservicio:
 
-- MODIFICAR LA IP DEL REMOTE MODULE BASADA EN EL DISPOSITIVO EN CUAL SE ESTÁ UTILIZANDO-
+resenas_db
 
-    private const val BASE_URL_USUARIOS = "http://192.168.1.37:8081/api/" --> AQUI SE MODIFICA SEGUN LA IP DEL DISPOSITIVO
-    private const val BASE_URL_RESENAS = "http://192.168.1.37:8082/" // ← sin /api
-    private const val BASE_URL_FEEDBACK = "http://192.168.1.37:8083/" // Nuevo microservicio de feedback en el puerto 8083
+usuarios_db
 
---ENDPOINTS-- 
+feedback_db
 
-## Endpoints de la API de Feedback
-- **Crear un nuevo feedback:**
-  - **Método:** `POST`
-  - **Ruta:** `http://localhost:8083/api/feedback`
-  - **Descripción:** Crea un nuevo feedback.
-  - **Cuerpo de la solicitud (JSON):**
-    ```json
-    {
-      "comentario": "Texto del comentario",
-      "usuarioId": 123
-    }
-    ```
-  - **Respuesta (200 OK):**
-    ```json
-    {
-      "id": 1,
-      "comentario": "Texto del comentario",
-      "usuarioId": 123,
-      "fechaCreacion": "2025-11-23T00:00:00"
-    }
-    ```
+peliculas_db
 
-- **Obtener todos los feedbacks:**
-  - **Método:** `GET`
-  - **Ruta:** `http://localhost:8083/api/feedback`
-  - **Descripción:** Obtiene todos los feedbacks registrados.
-  - **Respuesta (200 OK):**
-    ```json
-    [
-      {
-        "id": 1,
-        "comentario": "Texto del comentario",
-        "usuarioId": 123,
-        "fechaCreacion": "2025-11-23T00:00:00"
-      },
-      {
-        "id": 2,
-        "comentario": "Otro comentario",
-        "usuarioId": 124,
-        "fechaCreacion": "2025-11-23T01:00:00"
-      }
-    ]
-    ```
+Documentación Swagger por Microservicio
 
-- **Obtener feedbacks de un usuario específico:**
-  - **Método:** `GET`
-  - **Ruta:** `http://localhost:8083/api/feedback/usuario/{usuarioId}`
-  - **Descripción:** Obtiene todos los feedbacks asociados a un usuario específico por su `usuarioId`.
-  - **Parámetro de ruta:**
-    - `usuarioId`: ID del usuario para filtrar los feedbacks.
-  - **Respuesta (200 OK):**
-    ```json
-    [
-      {
-        "id": 1,
-        "comentario": "Texto del comentario",
-        "usuarioId": 123,
-        "fechaCreacion": "2025-11-23T00:00:00"
-      }
-    ]
-    ```
+Cada microservicio expone su propia documentación Swagger. Para acceder:
 
-### URL base
-La API está corriendo en el puerto `8083`. Las URLs completas para los endpoints son:
+Usuarios
+http://localhost:8081/swagger-ui/index.html#/
 
-- Crear feedback: `http://localhost:8083/api/feedback`
-- Obtener todos los feedbacks: `http://localhost:8083/api/feedback`
-- Obtener feedbacks por usuario: `http://localhost:8083/api/feedback/usuario/{usuarioId}`
+Reseñas
+http://localhost:8082/swagger-ui/index.html#/
 
-## Endpoints de la API de Reseñas
+Feedback
+http://localhost:8083/swagger-ui/index.html#/
 
-- **Crear una nueva reseña:**
-  - **Método:** `POST`
-  - **Ruta:** `http://localhost:8082/reviews`
-  - **Descripción:** Crea una nueva reseña.
-  - **Cuerpo de la solicitud (JSON):**
-    ```json
-    {
-      "comentario": "Texto de la reseña",
-      "calificacion": 4,
-      "movieId": 123
-    }
-    ```
-  - **Respuesta (201 Created):**
-    ```json
-    {
-      "id": 1,
-      "comentario": "Texto de la reseña",
-      "calificacion": 4,
-      "movieId": 123,
-      "fechaCreacion": "2025-11-23T00:00:00"
-    }
-    ```
+Películas
+http://localhost:8084/swagger-ui/index.html#/
 
-- **Obtener reseñas por película:**
-  - **Método:** `GET`
-  - **Ruta:** `http://localhost:8082/reviews/movie/{movieId}`
-  - **Descripción:** Obtiene todas las reseñas asociadas a una película específica, identificada por su `movieId`.
-  - **Parámetro de ruta:**
-    - `movieId`: ID de la película para filtrar las reseñas.
-  - **Respuesta (200 OK):**
-    ```json
-    [
-      {
-        "id": 1,
-        "comentario": "Excelente película",
-        "calificacion": 5,
-        "movieId": 123,
-        "fechaCreacion": "2025-11-23T00:00:00"
-      },
-      {
-        "id": 2,
-        "comentario": "Buena, pero con detalles",
-        "calificacion": 3,
-        "movieId": 123,
-        "fechaCreacion": "2025-11-23T01:00:00"
-      }
-    ]
-    ```
+Creación de Roles Especiales (ADMIN y MOD)
 
-- **Obtener todas las reseñas:**
-  - **Método:** `GET`
-  - **Ruta:** `http://localhost:8082/reviews`
-  - **Descripción:** Obtiene todas las reseñas registradas.
-  - **Respuesta (200 OK):**
-    ```json
-    [
-      {
-        "id": 1,
-        "comentario": "Excelente película",
-        "calificacion": 5,
-        "movieId": 123,
-        "fechaCreacion": "2025-11-23T00:00:00"
-      },
-      {
-        "id": 2,
-        "comentario": "Buena, pero con detalles",
-        "calificacion": 3,
-        "movieId": 123,
-        "fechaCreacion": "2025-11-23T01:00:00"
-      }
-    ]
-    ```
+Para probar correctamente permisos y flujos protegidos, se deben crear manualmente los usuarios con roles ADMIN y MODERADOR mediante Swagger o Postman.
 
-- **Eliminar una reseña:**
-  - **Método:** `DELETE`
-  - **Ruta:** `http://localhost:8082/reviews/{id}`
-  - **Descripción:** Elimina una reseña específica por su `id`.
-  - **Parámetro de ruta:**
-    - `id`: ID de la reseña a eliminar.
-  - **Respuesta (204 No Content):** No retorna contenido.
+Usuario Moderador
 
-### URL base
-La API está corriendo en el puerto `8082`. Las URLs completas para los endpoints son:
-
-- Crear reseña: `http://localhost:8082/reviews`
-- Obtener reseñas por película: `http://localhost:8082/reviews/movie/{movieId}`
-- Obtener todas las reseñas: `http://localhost:8082/reviews`
-- Eliminar reseña: `http://localhost:8082/reviews/{id}`
+{
+  "nombre": "Moderador",
+  "email": "mod@mail.com",
+  "password": "Moderador123@",
+  "fotoPerfilUrl": "",
+  "rol": "MODERADOR"
+}
 
 
-## Endpoints de la API de Usuarios
+Usuario Administrador
 
-- **Registrar un nuevo usuario:**
-  - **Método:** `POST`
-  - **Ruta:** `http://localhost:8081/api/usuarios/registrar`
-  - **Descripción:** Registra un nuevo usuario.
-  - **Cuerpo de la solicitud (JSON):**
-    ```json
-    {
-      "nombre": "Juan Pérez",
-      "email": "juan.perez@example.com",
-      "contrasena": "contraseña123"
-    }
-    ```
-  - **Respuesta (200 OK):**
-    ```json
-    {
-      "id": 1,
-      "nombre": "Juan Pérez",
-      "email": "juan.perez@example.com",
-      "fechaCreacion": "2025-11-23T00:00:00"
-    }
-    ```
+{
+  "nombre": "Admin",
+  "email": "admin@mail.com",
+  "password": "Admin123@",
+  "fotoPerfilUrl": "",
+  "rol": "ADMIN"
+}
 
-- **Iniciar sesión (login):**
-  - **Método:** `POST`
-  - **Ruta:** `http://localhost:8081/api/usuarios/login`
-  - **Descripción:** Inicia sesión con las credenciales de un usuario.
-  - **Cuerpo de la solicitud (JSON):**
-    ```json
-    {
-      "email": "juan.perez@example.com",
-      "contrasena": "contraseña123"
-    }
-    ```
-  - **Respuesta (200 OK):**
-    ```json
-    {
-      "token": "jwt_token_aqui",
-      "mensaje": "Inicio de sesión exitoso"
-    }
-    ```
-  - **Respuesta (401 Unauthorized):**
-    ```json
-    {
-      "token": null,
-      "mensaje": "Credenciales inválidas"
-    }
-    ```
+Procedimiento para Obtener y Usar el Póster de una Película desde TMDb
+1. Ingresar al sitio de películas
 
-- **Obtener todos los usuarios:**
-  - **Método:** `GET`
-  - **Ruta:** `http://localhost:8081/api/usuarios`
-  - **Descripción:** Obtiene una lista de todos los usuarios registrados.
-  - **Respuesta (200 OK):**
-    ```json
-    [
-      {
-        "id": 1,
-        "nombre": "Juan Pérez",
-        "email": "juan.perez@example.com",
-        "fechaCreacion": "2025-11-23T00:00:00"
-      },
-      {
-        "id": 2,
-        "nombre": "Ana Gómez",
-        "email": "ana.gomez@example.com",
-        "fechaCreacion": "2025-11-22T12:00:00"
-      }
-    ]
-    ```
+Entrar a:
 
-- **Eliminar un usuario:**
-  - **Método:** `DELETE`
-  - **Ruta:** `http://localhost:8081/api/usuarios/{id}`
-  - **Descripción:** Elimina un usuario específico por su `id`.
-  - **Parámetro de ruta:**
-    - `id`: ID del usuario a eliminar.
-  - **Respuesta (204 No Content):** No retorna contenido.
+https://www.themoviedb.org/
 
-- **Actualizar rol de un usuario:**
-  - **Método:** `PUT`
-  - **Ruta:** `http://localhost:8081/api/usuarios/{id}`
-  - **Descripción:** Actualiza el rol de un usuario específico.
-  - **Parámetro de ruta:**
-    - `id`: ID del usuario cuyo rol se desea actualizar.
-  - **Parámetro de consulta:**
-    - `rol`: Nuevo rol para el usuario (por ejemplo, `ADMIN`, `USER`).
-  - **Respuesta (200 OK):**
-    ```json
-    {
-      "id": 1,
-      "nombre": "Juan Pérez",
-      "email": "juan.perez@example.com",
-      "rol": "ADMIN",
-      "fechaCreacion": "2025-11-23T00:00:00"
-    }
-    ```
+2. Buscar la película
 
-### URL base
-La API está corriendo en el puerto `8081`. Las URLs completas para los endpoints son:
+Usar la barra de búsqueda y seleccionar la película deseada.
 
-- Registrar usuario: `http://localhost:8081/api/usuarios/registrar`
-- Iniciar sesión: `http://localhost:8081/api/usuarios/login`
-- Obtener todos los usuarios: `http://localhost:8081/api/usuarios`
-- Eliminar usuario: `http://localhost:8081/api/usuarios/{id}`
-- Actualizar rol de usuario: `http://localhost:8081/api/usuarios/{id}`
+3. Obtener la dirección del póster
+
+Dentro de la ficha de la película:
+
+Abrir el póster haciendo clic sobre él.
+
+Cuando se muestre ampliado, usar clic derecho → Copiar dirección de la imagen.
+Con eso queda copiado el enlace original del póster.
+
+4. Ajustar la URL al formato requerido (tamaño w500)
+
+TMDb entrega un enlace con un tamaño específico, por ejemplo:
+
+https://www.themoviedb.org/t/p/w600_and_h900_face/7tiub1UB4KF9zpacEldfbWAXDi6.jpg
+
+
+La aplicación usa tamaño w500, por lo que solo se reemplaza el bloque del tamaño:
+
+Original: w600_and_h900_face
+
+Requerido: w500
+
+Ejemplo 1
+
+Copiada:
+
+https://www.themoviedb.org/t/p/w600_and_h900_face/7tiub1UB4KF9zpacEldfbWAXDi6.jpg
+
+
+Corregida:
+
+https://www.themoviedb.org/t/p/w500/7tiub1UB4KF9zpacEldfbWAXDi6.jpg
+
+
+Ejemplo 2
+
+Copiada:
+
+https://www.themoviedb.org/t/p/w600_and_h900_face/oiqKEhEfxl9knzWXvWecJKN3aj6.jpg
+
+
+Corregida:
+
+https://www.themoviedb.org/t/p/w500/oiqKEhEfxl9knzWXvWecJKN3aj6.jpg
+
+
+Solo se reemplaza el bloque central por w500. El resto del enlace permanece igual.
+
+5. Ingresar el enlace en la aplicación
+
+En la pantalla Agregar Película:
+
+Pegar la URL corregida en el campo del póster.
+
+Completar los demás datos requeridos.
+
+Guardar la película.
