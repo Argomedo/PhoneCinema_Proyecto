@@ -1,4 +1,4 @@
-package com.phonecinema.servicios_usuario;
+package com.phonecinema.serviciosusuario;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
