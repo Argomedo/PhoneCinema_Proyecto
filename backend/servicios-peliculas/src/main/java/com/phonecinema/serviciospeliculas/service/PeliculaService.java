@@ -46,9 +46,10 @@ public class PeliculaService {
         p.setAnio(dto.getAnio());
         p.setPosterUrl(dto.getPosterUrl());
 
-        repo.save(p);
-        return toDTO(p);
+        Pelicula saved = repo.save(p);   // ← ESTE OBJETO trae el ID asignado
+        return toDTO(saved);             // ← Se mapea la versión correcta
     }
+
 
     // ----------------- UPDATE -----------------
 
