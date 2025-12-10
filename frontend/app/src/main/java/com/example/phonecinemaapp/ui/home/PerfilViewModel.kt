@@ -1,10 +1,13 @@
 package com.example.phonecinemaapp.ui.perfil
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phonecinema.data.repository.ReviewRepository
 import com.example.phonecinemaapp.data.repository.UserRepository
 import com.example.phonecinemaapp.data.session.UserSession
+import com.example.phonecinemaapp.data.local.UserPrefs
+import com.example.phonecinemaapp.data.local.user.UserEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +43,7 @@ class PerfilViewModel(
                     id = user.id,
                     nombre = user.nombre,
                     email = user.email,
-                    fotoUri = user.fotoPerfilUrl
+                    fotoUri = user.fotoPerfilUrl ?: ""
                 )
             }
             currentUser = user
@@ -52,24 +55,40 @@ class PerfilViewModel(
             try {
                 val user = userRepository.getUserById(id)
 
+                val entity = UserEntity(
+                    id = user.id,
+                    nombre = user.nombre,
+                    email = user.email,
+                    fotoPerfilUrl = user.fotoPerfilUrl ?: "",
+                    rol = user.rol.nombre
+                )
+
+                currentUser = entity
+                UserSession.currentUser = entity
+
                 _uiState.update {
                     it.copy(
-                        id = user.id,
-                        nombre = user.nombre,
-                        email = user.email,
-                        fotoUri = user.fotoPerfilUrl ?: ""
+                        id = entity.id,
+                        nombre = entity.nombre,
+                        email = entity.email,
+                        fotoUri = entity.fotoPerfilUrl
                     )
                 }
+
             } catch (_: Exception) {
                 _uiState.update { it.copy(errorMensaje = "No fue posible cargar el usuario") }
             }
         }
     }
 
+
     fun cargarResenasUsuario(userId: Long) {
         _uiState.update { it.copy(userReviews = emptyList()) }
     }
 
+    // ------------------------
+    // FORMULARIO / CAMPOS
+    // ------------------------
     fun onNombreChange(nuevo: String) {
         _uiState.update { it.copy(nombre = nuevo) }
     }
@@ -80,9 +99,18 @@ class PerfilViewModel(
 
     fun onFotoChange(nuevo: String) {
         _uiState.update { it.copy(fotoUri = nuevo) }
+
+        // persistencia instantánea si el usuario ya existe
+        if (currentUser != null) {
+            currentUser = currentUser!!.copy(fotoPerfilUrl = nuevo)
+            UserSession.currentUser = currentUser
+        }
     }
 
-    fun guardarCambios() {
+    // ------------------------
+    // GUARDAR CAMBIOS
+    // ------------------------
+    fun guardarCambios(context: Context) {
         val usuarioActual = currentUser ?: run {
             _uiState.update { it.copy(errorMensaje = "No hay usuario cargado") }
             return
@@ -94,14 +122,20 @@ class PerfilViewModel(
             fotoPerfilUrl = _uiState.value.fotoUri
         )
 
+        // 1) Guardar en sesión
         UserSession.currentUser = actualizado
         currentUser = actualizado
 
-        _uiState.update {
-            it.copy(successMensaje = "Datos actualizados localmente")
-        }
+        // 2) Guardar foto en SharedPreferences
+        UserPrefs.saveFoto(context, _uiState.value.fotoUri)
+
+        _uiState.update { it.copy(successMensaje = "Datos actualizados correctamente") }
     }
 
+
+    // ------------------------
+    // CAMBIAR CONTRASEÑA
+    // ------------------------
     fun cambiarPassword(passwordActual: String, passwordNueva: String) {
         viewModelScope.launch {
             try {
@@ -116,7 +150,7 @@ class PerfilViewModel(
                 _uiState.update {
                     it.copy(successMensaje = "Contraseña actualizada correctamente")
                 }
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 _uiState.update {
                     it.copy(errorMensaje = "No se pudo cambiar la contraseña")
                 }

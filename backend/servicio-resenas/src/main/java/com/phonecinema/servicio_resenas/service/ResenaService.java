@@ -17,7 +17,7 @@ import java.util.List;
 public class ResenaService {
 
     private final ResenaRepository repository;
-    private final UsuarioClient usuarioClient;   // ← comunicación con microservicio usuarios
+    private final UsuarioClient usuarioClient;
 
     public ResenaDTO crearResena(ResenaDTO dto) {
 
@@ -31,6 +31,7 @@ public class ResenaService {
         entity.setMovieId(dto.getMovieId());
         entity.setUserId(usuario.getIdUsuario());
         entity.setUserName(usuario.getNombre());
+        entity.setFotoUsuario(usuario.getFotoPerfilUrl());   // ← AGREGADO
         entity.setRating(dto.getRating());
         entity.setComment(dto.getComment());
         entity.setTimestamp(LocalDateTime.now());
@@ -58,6 +59,9 @@ public class ResenaService {
     }
 
     private ResenaDTO mapToDTO(Resena entity) {
+
+        UsuarioResponse usuario = usuarioClient.getUsuario(entity.getUserId());
+
         ResenaDTO dto = new ResenaDTO();
         dto.setId(entity.getId());
         dto.setMovieId(entity.getMovieId());
@@ -66,18 +70,23 @@ public class ResenaService {
         dto.setRating(entity.getRating());
         dto.setComment(entity.getComment());
         dto.setTimestamp(entity.getTimestamp());
+
+        // FOTO desde microservicio usuario
+        dto.setFotoUsuario(
+            usuario != null ? usuario.getFotoPerfilUrl() : null
+        );
+
         return dto;
     }
 
     public RatingResponse getPromedio(Long movieId) {
+        Double promedio = repository.obtenerPromedio(movieId);
+        Long total = repository.contarResenas(movieId);
 
-    Double promedio = repository.obtenerPromedio(movieId);
-    Long total = repository.contarResenas(movieId);
-
-    return new RatingResponse(
-        promedio != null ? promedio : 0.0,
-        total != null ? total : 0L
-    );
+        return new RatingResponse(
+            promedio != null ? promedio : 0.0,
+            total != null ? total : 0L
+        );
+    }
 }
 
-}

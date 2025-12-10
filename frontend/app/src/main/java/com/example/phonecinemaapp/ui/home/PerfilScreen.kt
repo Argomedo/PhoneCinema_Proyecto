@@ -1,13 +1,14 @@
 package com.example.phonecinemaapp.ui.perfil
 
 import android.Manifest
+import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
@@ -27,6 +28,7 @@ import coil.compose.AsyncImage
 import com.example.phonecinemaapp.navigation.AppScreens
 import com.example.phonecinemaapp.ui.components.AppTopBar
 import com.example.phonecinemaapp.utils.RecuerdaFotos
+import com.example.phonecinemaapp.data.local.UserPrefs
 import kotlinx.coroutines.delay
 import java.io.File
 
@@ -41,9 +43,16 @@ fun PerfilScreen(
     onNavigateToFeedback: () -> Unit
 ) {
     val uiState by perfilViewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
         perfilViewModel.cargarUsuario(userId)
+
+        val fotoGuardada = UserPrefs.getFoto(context)
+        if (fotoGuardada.isNotBlank()) {
+            perfilViewModel.onFotoChange(fotoGuardada)
+        }
+
         perfilViewModel.cargarResenasUsuario(userId)
     }
 
@@ -56,10 +65,16 @@ fun PerfilScreen(
         navController = navController,
         uiState = uiState,
         onBackClick = onBackClick,
-        onSave = perfilViewModel::guardarCambios,
+        onSave = {
+            perfilViewModel.guardarCambios(context)
+            UserPrefs.saveFoto(context, uiState.fotoUri)
+        },
         onNombreChange = perfilViewModel::onNombreChange,
         onEmailChange = perfilViewModel::onEmailChange,
-        onFotoChange = perfilViewModel::onFotoChange,
+        onFotoChange = {
+            perfilViewModel.onFotoChange(it)
+            UserPrefs.saveFoto(context, it)
+        },
         onClearMessages = perfilViewModel::clearMessages,
         onLogout = perfilViewModel::logout,
         onChangePassword = perfilViewModel::cambiarPassword
@@ -92,8 +107,9 @@ fun PerfilContent(
     val avatarBlue = Color(0xFF1A2750)
     val fieldDisabledBg = Color(0xFF2A3350)
 
+    // ---------------- Cámara ----------------
     val camaraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
+        ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
             tempImageFile?.let { file ->
@@ -104,16 +120,17 @@ fun PerfilContent(
         tempImageFile = null
     }
 
+    // ---------------- Galería ----------------
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { onFotoChange(it.toString()) }
     }
 
     val camaraPermisionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+    ) { granted ->
+        if (granted) {
             tempImageFile = fotoPerfil.crearArchivoImagen()
             tempImageFile?.let { file ->
                 val imageUri = fotoPerfil.ConsigueImagenUri(file)
@@ -162,10 +179,6 @@ fun PerfilContent(
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // -------------------------------------------------
-                    // CAMPOS NO EDITABLES CON FONDO DISTINTIVO
-                    // -------------------------------------------------
 
                     OutlinedTextField(
                         value = uiState.nombre,
@@ -259,8 +272,7 @@ fun PerfilContent(
                             galleryLauncher.launch("image/*")
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = cs.primary,
-                            contentColor = softWhite
+                            containerColor = cs.primary
                         )
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = softWhite)
@@ -274,8 +286,7 @@ fun PerfilContent(
                             camaraPermisionLauncher.launch(Manifest.permission.CAMERA)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = cs.primary,
-                            contentColor = softWhite
+                            containerColor = cs.primary
                         )
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, tint = softWhite)
@@ -379,12 +390,6 @@ fun CambiarPasswordDialog(
                     value = actual,
                     onValueChange = { actual = it },
                     label = { Text("Contraseña actual", color = cs.onSurface) },
-                    textStyle = LocalTextStyle.current.copy(color = cs.onSurface),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = cs.primary,
-                        unfocusedBorderColor = cs.onSurface.copy(alpha = 0.4f),
-                        cursorColor = cs.primary
-                    ),
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -395,12 +400,6 @@ fun CambiarPasswordDialog(
                     value = nueva,
                     onValueChange = { nueva = it },
                     label = { Text("Nueva contraseña", color = cs.onSurface) },
-                    textStyle = LocalTextStyle.current.copy(color = cs.onSurface),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = cs.primary,
-                        unfocusedBorderColor = cs.onSurface.copy(alpha = 0.4f),
-                        cursorColor = cs.primary
-                    ),
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -412,7 +411,6 @@ fun CambiarPasswordDialog(
                     if (actual.isNotBlank() && nueva.isNotBlank()) {
                         onConfirm(actual, nueva)
                     }
-                    onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = cs.primary,

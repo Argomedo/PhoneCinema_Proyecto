@@ -122,4 +122,16 @@ public void cambiarPassword(Integer id, String actual, String nueva) {
     usuarioRepository.save(usuario);
 }
 
+@Override
+public Usuario actualizarFoto(Integer id, String nuevaFotoUrl) {
+
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    usuario.setFotoPerfilUrl(nuevaFotoUrl);
+
+    return usuarioRepository.save(usuario);
+}
+
+
 }

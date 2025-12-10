@@ -24,6 +24,9 @@ public class Resena {
     private Long userId;
 
     @Column(nullable = true)
+    private String fotoUsuario; 
+
+    @Column(nullable = true)
     private String userName;
 
     @Column(nullable = false)

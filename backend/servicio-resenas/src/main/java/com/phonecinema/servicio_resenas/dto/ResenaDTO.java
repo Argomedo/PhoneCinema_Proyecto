@@ -19,6 +19,8 @@ public class ResenaDTO {
 
     private String userName;
 
+    private String fotoUsuario;   // ← AGREGAR ESTO
+
     @NotNull
     @Min(1) @Max(5)
     private Integer rating;
@@ -28,6 +30,7 @@ public class ResenaDTO {
 
     private LocalDateTime timestamp;
 }
+
 
 
 

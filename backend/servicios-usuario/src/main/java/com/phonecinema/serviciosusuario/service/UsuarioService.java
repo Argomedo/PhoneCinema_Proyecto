@@ -15,5 +15,7 @@ public interface UsuarioService {
     void eliminarUsuario(Integer id);
     Usuario actualizarRol(Integer id, String nuevoRol);
     void cambiarPassword(Integer id, String actual, String nueva);
+    Usuario actualizarFoto(Integer id, String nuevaFotoUrl);
+
 
 }

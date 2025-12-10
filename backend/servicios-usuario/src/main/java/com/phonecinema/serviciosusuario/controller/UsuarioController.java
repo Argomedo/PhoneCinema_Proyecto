@@ -13,6 +13,7 @@ import com.phonecinema.serviciosusuario.model.Usuario;
 import com.phonecinema.serviciosusuario.service.UsuarioService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -70,7 +71,15 @@ public class UsuarioController {
         return ResponseEntity.ok("Contraseña actualizada correctamente");
     } catch (RuntimeException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
+    }}
+
+    @PutMapping("/{id}/foto")
+    public Usuario actualizarFoto(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body
+    ) {
+        return usuarioService.actualizarFoto(id, body.get("fotoPerfilUrl"));
     }
-}
+
 
 }
