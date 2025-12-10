@@ -2,6 +2,7 @@ package com.phonecinema.servicio_resenas.service;
 
 import com.phonecinema.servicio_resenas.client.UsuarioClient;
 import com.phonecinema.servicio_resenas.client.UsuarioResponse;
+import com.phonecinema.servicio_resenas.dto.RatingResponse;
 import com.phonecinema.servicio_resenas.dto.ResenaDTO;
 import com.phonecinema.servicio_resenas.model.Resena;
 import com.phonecinema.servicio_resenas.repository.ResenaRepository;
@@ -67,4 +68,16 @@ public class ResenaService {
         dto.setTimestamp(entity.getTimestamp());
         return dto;
     }
+
+    public RatingResponse getPromedio(Long movieId) {
+
+    Double promedio = repository.obtenerPromedio(movieId);
+    Long total = repository.contarResenas(movieId);
+
+    return new RatingResponse(
+        promedio != null ? promedio : 0.0,
+        total != null ? total : 0L
+    );
+}
+
 }

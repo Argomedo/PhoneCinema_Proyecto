@@ -1,5 +1,6 @@
 package com.phonecinema.servicio_resenas.controller;
 
+import com.phonecinema.servicio_resenas.dto.RatingResponse;
 import com.phonecinema.servicio_resenas.dto.ResenaDTO;
 import com.phonecinema.servicio_resenas.service.ResenaService;
 import jakarta.validation.Valid;
@@ -38,4 +39,10 @@ public class ResenaController {
         resenaService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/promedio/{movieId}")
+    public ResponseEntity<RatingResponse> getPromedio(@PathVariable Long movieId) {
+        return ResponseEntity.ok(resenaService.getPromedio(movieId));
+}
+
 }

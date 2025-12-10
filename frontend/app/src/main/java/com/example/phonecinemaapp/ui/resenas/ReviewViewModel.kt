@@ -16,6 +16,12 @@ data class ReviewUiState(
     val reviews: List<ReviewUi> = emptyList()
 )
 
+data class RatingUiState(
+    val promedio: Double = 0.0,
+    val total: Int = 0,
+    val loading: Boolean = true
+)
+
 class ReviewViewModel(
     private val reviewRepository: ReviewRepository,
     private val peliculasRepository: PeliculasRepositoryRemote
@@ -24,9 +30,15 @@ class ReviewViewModel(
     private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
 
-    // Película cargada REAL desde el backend
     private val _pelicula = MutableStateFlow<PeliculaDTO?>(null)
     val pelicula: StateFlow<PeliculaDTO?> = _pelicula.asStateFlow()
+
+    private val _rating = MutableStateFlow(RatingUiState())
+    val rating: StateFlow<RatingUiState> = _rating.asStateFlow()
+
+    // -----------------------------
+    // Setters UI
+    // -----------------------------
 
     fun setRating(value: Int) {
         _uiState.update { it.copy(currentRating = value) }
@@ -36,16 +48,23 @@ class ReviewViewModel(
         _uiState.update { it.copy(currentReviewText = value) }
     }
 
+    // -----------------------------
+    // LOAD MOVIE
+    // -----------------------------
+
     fun loadMovie(movieId: Int) {
         viewModelScope.launch {
             try {
-                val result = peliculasRepository.getById(movieId.toLong())
-                _pelicula.value = result
-            } catch (e: Exception) {
+                _pelicula.value = peliculasRepository.getById(movieId.toLong())
+            } catch (_: Exception) {
                 _pelicula.value = null
             }
         }
     }
+
+    // -----------------------------
+    // LOAD REVIEWS
+    // -----------------------------
 
     fun loadReviews(movieId: Int) {
         viewModelScope.launch {
@@ -55,7 +74,7 @@ class ReviewViewModel(
                 val mapped = dtoList.map { dto ->
                     ReviewUi(
                         userName = dto.userName ?: "Usuario",
-                        rating = dto.rating.toInt(),
+                        rating = dto.rating,
                         comment = dto.comment,
                         timestamp = dto.timestamp ?: "",
                         fotoUsuario = dto.fotoUsuario ?: ""
@@ -66,11 +85,15 @@ class ReviewViewModel(
 
                 _uiState.update { it.copy(reviews = sorted) }
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _uiState.update { it.copy(reviews = emptyList()) }
             }
         }
     }
+
+    // -----------------------------
+    // ADD REVIEW
+    // -----------------------------
 
     fun addReview(movieId: Int) {
         viewModelScope.launch {
@@ -92,7 +115,7 @@ class ReviewViewModel(
 
                 val newReview = ReviewUi(
                     userName = created.userName ?: usuario.nombre,
-                    rating = created.rating.toInt(),
+                    rating = created.rating,
                     comment = created.comment,
                     timestamp = created.timestamp ?: "",
                     fotoUsuario = created.fotoUsuario ?: usuario.fotoPerfilUrl
@@ -109,7 +132,31 @@ class ReviewViewModel(
                     )
                 }
 
+                // Se actualiza promedio después de reseña
+                loadRating(movieId)
+
             } catch (_: Exception) { }
+        }
+    }
+
+    // -----------------------------
+    // LOAD RATING AVERAGE
+    // -----------------------------
+
+    fun loadRating(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                val data = reviewRepository.getMovieAverage(movieId.toLong())
+
+                _rating.value = RatingUiState(
+                    promedio = data.promedio,
+                    total = data.totalResenas,
+                    loading = false
+                )
+
+            } catch (_: Exception) {
+                _rating.value = _rating.value.copy(loading = false)
+            }
         }
     }
 }

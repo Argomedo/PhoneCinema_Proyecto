@@ -37,10 +37,12 @@ fun ReviewScreen(
 
     val uiState by reviewViewModel.uiState.collectAsState()
     val pelicula by reviewViewModel.pelicula.collectAsState()
+    val ratingState by reviewViewModel.rating.collectAsState()
 
     LaunchedEffect(movieId) {
         reviewViewModel.loadMovie(movieId)
         reviewViewModel.loadReviews(movieId)
+        reviewViewModel.loadRating(movieId)
     }
 
     if (pelicula == null) {
@@ -62,7 +64,11 @@ fun ReviewScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
 
-            MovieHeader(pelicula!!)
+            MovieHeader(
+                pelicula = pelicula!!,
+                promedio = ratingState.promedio,
+                totalResenas = ratingState.total
+            )
 
             ReviewInputSection(
                 rating = uiState.currentRating,
@@ -78,7 +84,11 @@ fun ReviewScreen(
 }
 
 @Composable
-fun MovieHeader(pelicula: PeliculaDTO) {
+fun MovieHeader(
+    pelicula: PeliculaDTO,
+    promedio: Double,
+    totalResenas: Int
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,33 +97,59 @@ fun MovieHeader(pelicula: PeliculaDTO) {
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            AsyncImage(
-                model = pelicula.posterUrl,
-                contentDescription = pelicula.nombre,
-                modifier = Modifier
-                    .width(120.dp)
-                    .height(180.dp),
-                contentScale = ContentScale.Crop
-            )
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                AsyncImage(
+                    model = pelicula.posterUrl,
+                    contentDescription = pelicula.nombre,
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(180.dp),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ⭐ Calificación debajo del póster
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Spacer(Modifier.width(4.dp))
+
+                    Text(
+                        text = String.format("%.1f / 5.0", promedio),
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                Text(
+                    text = "(${totalResenas} reseñas)",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(pelicula.nombre, style = MaterialTheme.typography.titleLarge)
-
-                Spacer(modifier = Modifier.height(6.dp))
-
+                Spacer(Modifier.height(6.dp))
                 Text(
                     "${pelicula.genero} • ${pelicula.duracion} • ${pelicula.anio}",
-                    style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(pelicula.descripcion, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(10.dp))
+                Text(pelicula.descripcion)
             }
         }
     }
@@ -128,6 +164,7 @@ fun ReviewInputSection(
     onSubmitReview: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
+
         Text("Calificación", style = MaterialTheme.typography.titleMedium)
 
         Row(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -150,23 +187,25 @@ fun ReviewInputSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            label = { Text("Tu reseña") },
+            label = { Text("Tu reseña (opcional)") },
             maxLines = 5
         )
 
         Button(
             onClick = onSubmitReview,
             modifier = Modifier.fillMaxWidth(),
-            enabled = rating > 0 && reviewText.isNotBlank()
+            enabled = rating > 0 // ← solo se exige rating
         ) {
             Text("Publicar reseña")
         }
     }
 }
 
+
 @Composable
 fun ReviewsList(reviews: List<ReviewUi>) {
     Column(modifier = Modifier.padding(top = 8.dp)) {
+
         Text(
             text = "Reseñas de la comunidad (${reviews.size})",
             style = MaterialTheme.typography.titleMedium,
