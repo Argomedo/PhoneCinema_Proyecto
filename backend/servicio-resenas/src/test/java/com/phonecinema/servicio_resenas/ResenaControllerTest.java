@@ -3,6 +3,7 @@ package com.phonecinema.servicio_resenas;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phonecinema.servicio_resenas.config.SecurityDisabledConfig;
 import com.phonecinema.servicio_resenas.controller.ResenaController;
+import com.phonecinema.servicio_resenas.dto.RatingResponse;
 import com.phonecinema.servicio_resenas.dto.ResenaDTO;
 import com.phonecinema.servicio_resenas.service.ResenaService;
 import org.junit.jupiter.api.Test;
@@ -16,13 +17,13 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ResenaController.class)
 @Import(SecurityDisabledConfig.class)
-
 class ResenaControllerTest {
 
     @Autowired
@@ -111,9 +112,24 @@ class ResenaControllerTest {
 
     @Test
     void delete_debeRetornar204() throws Exception {
+
         Mockito.doNothing().when(resenaService).delete(5L);
 
         mockMvc.perform(delete("/reviews/5"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void getPromedio_debeRetornarRatingResponse() throws Exception {
+
+        RatingResponse resp = new RatingResponse(4.5, 10L);
+
+        Mockito.when(resenaService.getPromedio(eq(200L)))
+                .thenReturn(resp);
+
+        mockMvc.perform(get("/reviews/promedio/200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.promedio").value(4.5))
+                .andExpect(jsonPath("$.totalResenas").value(10));
     }
 }

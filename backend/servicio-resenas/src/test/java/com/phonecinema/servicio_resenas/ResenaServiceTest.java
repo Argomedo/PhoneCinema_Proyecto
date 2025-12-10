@@ -2,11 +2,11 @@ package com.phonecinema.servicio_resenas;
 
 import com.phonecinema.servicio_resenas.client.UsuarioClient;
 import com.phonecinema.servicio_resenas.client.UsuarioResponse;
+import com.phonecinema.servicio_resenas.dto.RatingResponse;
 import com.phonecinema.servicio_resenas.dto.ResenaDTO;
 import com.phonecinema.servicio_resenas.model.Resena;
 import com.phonecinema.servicio_resenas.repository.ResenaRepository;
 import com.phonecinema.servicio_resenas.service.ResenaService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -38,7 +38,7 @@ class ResenaServiceTest {
     }
 
     @Test
-    void crearResena_debeCrearYRetornarDTO() {
+    void crearResena_debeCrearYRetornarDTO_conFotoUsuario() {
 
         ResenaDTO dto = new ResenaDTO();
         dto.setMovieId(10L);
@@ -49,6 +49,7 @@ class ResenaServiceTest {
         UsuarioResponse usuario = new UsuarioResponse();
         usuario.setIdUsuario(1L);
         usuario.setNombre("Juan Tester");
+        usuario.setFotoPerfilUrl("foto.png");
 
         when(usuarioClient.getUsuario(1L)).thenReturn(usuario);
 
@@ -57,6 +58,7 @@ class ResenaServiceTest {
         entity.setMovieId(10L);
         entity.setUserId(1L);
         entity.setUserName("Juan Tester");
+        entity.setFotoUsuario("foto.png");
         entity.setRating(5);
         entity.setComment("Excelente");
         entity.setTimestamp(LocalDateTime.now());
@@ -71,8 +73,8 @@ class ResenaServiceTest {
         assertThat(result.getUserName()).isEqualTo("Juan Tester");
         assertThat(result.getRating()).isEqualTo(5);
         assertThat(result.getComment()).isEqualTo("Excelente");
+        assertThat(result.getFotoUsuario()).isEqualTo("foto.png");
 
-        verify(usuarioClient).getUsuario(1L);
         verify(repository).save(any(Resena.class));
     }
 
@@ -100,19 +102,29 @@ class ResenaServiceTest {
         r.setMovieId(20L);
         r.setUserId(7L);
         r.setUserName("Tester");
+        r.setFotoUsuario("foto-tester.png");
         r.setRating(4);
         r.setComment("Muy buena");
         r.setTimestamp(LocalDateTime.now());
 
         when(repository.findByMovieId(20L)).thenReturn(List.of(r));
 
+        // mapToDTO ahora llama a usuarioClient.getUsuario(userId)
+        UsuarioResponse usuario = new UsuarioResponse();
+        usuario.setIdUsuario(7L);
+        usuario.setNombre("Tester");
+        usuario.setFotoPerfilUrl("foto-tester.png");
+        when(usuarioClient.getUsuario(7L)).thenReturn(usuario);
+
         List<ResenaDTO> result = service.getByMovie(20L);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getMovieId()).isEqualTo(20L);
         assertThat(result.get(0).getComment()).isEqualTo("Muy buena");
+        assertThat(result.get(0).getFotoUsuario()).isEqualTo("foto-tester.png");
 
         verify(repository).findByMovieId(20L);
+        verify(usuarioClient).getUsuario(7L);
     }
 
     @Test
@@ -121,15 +133,27 @@ class ResenaServiceTest {
         Resena r = new Resena();
         r.setId(1L);
         r.setComment("Correcta");
+        r.setRating(3);
+        r.setMovieId(5L);
+        r.setUserId(1L);
+        r.setTimestamp(LocalDateTime.now());
 
         when(repository.findAll()).thenReturn(List.of(r));
+
+        UsuarioResponse usuario = new UsuarioResponse();
+        usuario.setIdUsuario(1L);
+        usuario.setNombre("User");
+        usuario.setFotoPerfilUrl("foto-user.png");
+        when(usuarioClient.getUsuario(1L)).thenReturn(usuario);
 
         List<ResenaDTO> result = service.getAll();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getComment()).isEqualTo("Correcta");
+        assertThat(result.get(0).getFotoUsuario()).isEqualTo("foto-user.png");
 
         verify(repository).findAll();
+        verify(usuarioClient).getUsuario(1L);
     }
 
     @Test
@@ -140,5 +164,35 @@ class ResenaServiceTest {
         service.delete(10L);
 
         verify(repository).deleteById(10L);
+    }
+
+    @Test
+    void getPromedio_debeRetornarValoresDeRepositorio() {
+
+        when(repository.obtenerPromedio(50L)).thenReturn(4.0);
+        when(repository.contarResenas(50L)).thenReturn(8L);
+
+        RatingResponse resp = service.getPromedio(50L);
+
+        assertThat(resp.getPromedio()).isEqualTo(4.0);
+        assertThat(resp.getTotalResenas()).isEqualTo(8L);
+
+        verify(repository).obtenerPromedio(50L);
+        verify(repository).contarResenas(50L);
+    }
+
+    @Test
+    void getPromedio_debeRetornarCerosCuandoNull() {
+
+        when(repository.obtenerPromedio(99L)).thenReturn(null);
+        when(repository.contarResenas(99L)).thenReturn(null);
+
+        RatingResponse resp = service.getPromedio(99L);
+
+        assertThat(resp.getPromedio()).isEqualTo(0.0);
+        assertThat(resp.getTotalResenas()).isEqualTo(0L);
+
+        verify(repository).obtenerPromedio(99L);
+        verify(repository).contarResenas(99L);
     }
 }
