@@ -111,6 +111,16 @@ dependencies {
     testImplementation("io.mockk:mockk:1.12.0")
     // MockK para Kotlin (opcional)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0")
-    // Si usas Coroutines en tu código
+
+    // Dependencias para testing de ViewModel
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+// Mockito para mocks
+    testImplementation("org.mockito:mockito-core:5.5.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+// Turbine para testing de Flows
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+
 
 }

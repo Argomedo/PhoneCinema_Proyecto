@@ -10,7 +10,8 @@ fun validateName(name: String): String? {
     if (name.isBlank()) return "El nombre es obligatorio"
     if (name.length < 3) return "El nombre debe tener mínimo 3 letras"
     // Primera letra debe ser mayúscula
-    if (!name.first().isUpperCase()) return "La primera letra debe ser mayúscula"
+    "Necesitamos que el nombre pueda ser o no ser con mayuscula"
+    //if (!name.first().isUpperCase()) return "La primera letra debe ser mayúscula"
     val regex = Regex("^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$")
     return if (!regex.matches(name)) "Solo letras" else null
 }
