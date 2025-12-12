@@ -97,7 +97,7 @@ private fun RegistroContent(
         OutlinedTextField(
             value = nombre,
             onValueChange = onNombreChange,
-            label = { Text("Nombre completo") },
+            label = { Text("Nombre") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             isError = error?.contains("nombre", ignoreCase = true) == true

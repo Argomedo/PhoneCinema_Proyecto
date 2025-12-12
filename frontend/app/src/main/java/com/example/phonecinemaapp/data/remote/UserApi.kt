@@ -37,4 +37,11 @@ interface UserApi {
         @Path("id") id: String,
         @Body body: CambiarPasswordRequest
     )
+
+    @PUT("usuarios/{id}/foto")
+    suspend fun actualizarFoto(
+        @Path("id") id: String,
+        @Body body: Map<String, String>
+    )
+
 }

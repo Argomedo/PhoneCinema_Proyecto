@@ -23,17 +23,23 @@ class UserRepository(userApi: UserApi) {
         UserSession.setUser(user)
     }
 
-    suspend fun getAllUsers(): List<UserDto> = api.getAll()
+    suspend fun getAllUsers(): List<UserDto> =
+        api.getAll()
 
-    suspend fun deleteUser(id: Long) = api.delete(id.toString())
+    suspend fun deleteUser(id: Long) =
+        api.delete(id.toString())
 
-    suspend fun updateUser(id: Long, nuevoRol: String) =
+    suspend fun updateUser(id: Long, nuevoRol: String): UserDto =
         api.update(id.toString(), nuevoRol)
 
     suspend fun getUserById(id: Long): UserDto =
         api.getById(id.toString())
 
-    suspend fun register(nombre: String, email: String, password: String): Result<UserDto> =
+    suspend fun register(
+        nombre: String,
+        email: String,
+        password: String
+    ): Result<UserDto> =
         try {
             val body = UsuarioRegistroDTO(
                 nombre = nombre.trim(),
@@ -45,7 +51,6 @@ class UserRepository(userApi: UserApi) {
             Result.failure(e)
         }
 
-    // ✔ Corrección: userId debe ser Long y el path debe enviarse como String
     suspend fun cambiarPassword(
         userId: Int,
         actual: String,
@@ -59,6 +64,17 @@ class UserRepository(userApi: UserApi) {
         api.cambiarPassword(
             id = userId.toString(),
             body = body
+        )
+    }
+
+    // 🔴 MÉTODO NUEVO — ESTE ES EL QUE FALTABA
+    suspend fun actualizarFotoUsuario(
+        userId: Long,
+        fotoUrl: String
+    ) {
+        api.actualizarFoto(
+            id = userId.toString(),
+            body = mapOf("fotoPerfilUrl" to fotoUrl)
         )
     }
 }

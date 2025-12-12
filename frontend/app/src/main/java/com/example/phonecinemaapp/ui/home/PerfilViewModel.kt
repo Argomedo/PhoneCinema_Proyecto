@@ -107,30 +107,38 @@ class PerfilViewModel(
         }
     }
 
-    // ------------------------
-    // GUARDAR CAMBIOS
-    // ------------------------
     fun guardarCambios(context: Context) {
         val usuarioActual = currentUser ?: run {
             _uiState.update { it.copy(errorMensaje = "No hay usuario cargado") }
             return
         }
 
-        val actualizado = usuarioActual.copy(
-            nombre = _uiState.value.nombre,
-            email = _uiState.value.email,
-            fotoPerfilUrl = _uiState.value.fotoUri
-        )
+        viewModelScope.launch {
+            try {
+                userRepository.actualizarFotoUsuario(
+                    userId = usuarioActual.id,
+                    fotoUrl = _uiState.value.fotoUri
+                )
 
-        // 1) Guardar en sesión
-        UserSession.currentUser = actualizado
-        currentUser = actualizado
+                val actualizado = usuarioActual.copy(
+                    fotoPerfilUrl = _uiState.value.fotoUri
+                )
 
-        // 2) Guardar foto en SharedPreferences
-        UserPrefs.saveFoto(context, _uiState.value.fotoUri)
+                UserSession.currentUser = actualizado
+                currentUser = actualizado
 
-        _uiState.update { it.copy(successMensaje = "Datos actualizados correctamente") }
+                _uiState.update {
+                    it.copy(successMensaje = "Foto actualizada correctamente")
+                }
+
+            } catch (_: Exception) {
+                _uiState.update {
+                    it.copy(errorMensaje = "No se pudo guardar la foto")
+                }
+            }
+        }
     }
+
 
 
     // ------------------------

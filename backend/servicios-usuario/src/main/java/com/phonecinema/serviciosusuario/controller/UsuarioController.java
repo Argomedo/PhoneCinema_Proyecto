@@ -8,6 +8,7 @@ import com.phonecinema.serviciosusuario.dto.LoginDTO;
 import com.phonecinema.serviciosusuario.dto.AuthResponseDTO;
 import com.phonecinema.serviciosusuario.dto.CambiarPasswordDTO;
 import com.phonecinema.serviciosusuario.dto.TokenDTO;
+import com.phonecinema.serviciosusuario.dto.UsuarioFotoDTO;
 import com.phonecinema.serviciosusuario.dto.UsuarioRegistroDTO;
 import com.phonecinema.serviciosusuario.model.Usuario;
 import com.phonecinema.serviciosusuario.service.UsuarioService;
@@ -76,10 +77,9 @@ public class UsuarioController {
     @PutMapping("/{id}/foto")
     public Usuario actualizarFoto(
             @PathVariable Integer id,
-            @RequestBody Map<String, String> body
+            @RequestBody UsuarioFotoDTO dto
     ) {
-        return usuarioService.actualizarFoto(id, body.get("fotoPerfilUrl"));
+        return usuarioService.actualizarFoto(id, dto.getFotoPerfilUrl());
     }
-
 
 }
