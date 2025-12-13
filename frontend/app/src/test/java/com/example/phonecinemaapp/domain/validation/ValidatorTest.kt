@@ -6,212 +6,298 @@ import org.junit.Test
 
 class ValidatorsTest {
 
-    // Tests para validateEmail
+    // ================================
+    // PRUEBAS PARA validateEmail
+    // ================================
+
     @Test
-    fun validateEmail_ok_email_valido() {
-        val error = validateEmail("usuario@ejemplo.com")
-        assertNull(error)
+    fun validateEmail_valido_retorna_null() {
+        assertNull(validateEmail("usuario@example.com"))
+        assertNull(validateEmail("usuario.nombre@sub.dominio.com"))
+        assertNull(validateEmail("usuario+tag@example.com"))
+        assertNull(validateEmail("a@b.co"))
     }
 
     @Test
-    fun validateEmail_ok_email_con_subdominio() {
-        val error = validateEmail("usuario@correo.ejemplo.com")
-        assertNull(error)
+    fun validateEmail_vacio_retorna_error() {
+        assertEquals("El email es obligatorio", validateEmail(""))
+        assertEquals("El email es obligatorio", validateEmail("   "))
     }
 
     @Test
-    fun validateEmail_ok_email_con_guiones() {
-        val error = validateEmail("usuario-nombre@dominio.com")
-        assertNull(error)
+    fun validateEmail_demasiado_largo_retorna_error() {
+        val longEmail = "a".repeat(250) + "@example.com"
+        assertEquals("El email es demasiado largo", validateEmail(longEmail))
     }
 
     @Test
-    fun validateEmail_error_email_vacio() {
-        val error = validateEmail("")
-        assertEquals("El email es obligatorio", error)
+    fun validateEmail_con_espacios_retorna_error() {
+        assertEquals("El email no debe contener espacios", validateEmail("usuario @example.com"))
+        assertEquals("El email no debe contener espacios", validateEmail("usuario@ example.com"))
     }
 
     @Test
-    fun validateEmail_error_email_sin_arroba() {
-        val error = validateEmail("usuario.dominio.com")
-        assertEquals("Formato de email inválido", error)
+    fun validateEmail_sin_arroba_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("usuarioexample.com"))
     }
 
     @Test
-    fun validateEmail_error_email_sin_dominio() {
-        val error = validateEmail("usuario@")
-        assertEquals("Formato de email inválido", error)
+    fun validateEmail_con_multiples_arroba_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("usuario@@example.com"))
     }
 
     @Test
-    fun validateEmail_error_email_con_espacios() {
-        val error = validateEmail("usuario @dominio.com")
-        assertEquals("Formato de email inválido", error)
-    }
-
-    // Tests para validateName
-    @Test
-    fun validateName_ok_nombre_valido() {
-        val error = validateName("Juan Pérez")
-        assertNull(error)
+    fun validateEmail_local_part_vacio_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("@example.com"))
     }
 
     @Test
-    fun validateName_ok_nombre_con_acentos() {
-        val error = validateName("María José Ñañez")
-        assertNull(error)
+    fun validateEmail_local_part_demasiado_largo_retorna_error() {
+        val longLocal = "a".repeat(65) + "@example.com"
+        assertEquals("Formato de email inválido", validateEmail(longLocal))
     }
 
     @Test
-    fun validateName_error_nombre_vacio() {
-        val error = validateName("")
-        assertEquals("El nombre es obligatorio", error)
+    fun validateEmail_dominio_invalido_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("usuario@.com"))
+        assertEquals("Formato de email inválido", validateEmail("usuario@example."))
+        assertEquals("Formato de email inválido", validateEmail("usuario@example..com"))
     }
 
     @Test
-    fun validateName_error_nombre_muy_corto() {
-        val error = validateName("Al")
-        assertEquals("El nombre debe tener mínimo 3 letras", error)
+    fun validateEmail_caracteres_invalidos_en_local_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("user@name@example.com"))
+        assertEquals("Formato de email inválido", validateEmail("user#name@example.com"))
+        assertEquals("Formato de email inválido", validateEmail("user&name@example.com"))
     }
 
     @Test
-    fun validateName_error_nombre_sin_mayuscula() {
-        val error = validateName("juan pérez")
-        assertEquals("Se debe incluir una mayúscula", error)
+    fun validateEmail_tld_invalido_retorna_error() {
+        assertEquals("Formato de email inválido", validateEmail("usuario@example.c"))
+        assertEquals("Formato de email inválido", validateEmail("usuario@example.123"))
+        assertEquals("Formato de email inválido", validateEmail("usuario@example.abcdefghijklmnopqrstuvwxyz"))
+    }
+
+    // ================================
+    // PRUEBAS PARA validateName
+    // ================================
+
+    @Test
+    fun validateName_valido_retorna_null() {
+        assertNull(validateName("juan"))
+        assertNull(validateName("juan_perez"))
+        assertNull(validateName("juan-perez"))
+        assertNull(validateName("juan.perez"))
+        assertNull(validateName("juan123"))
+        assertNull(validateName("JuAnPeReZ"))
     }
 
     @Test
-    fun validateName_error_nombre_con_numeros() {
-        val error = validateName("Juan123")
-        assertEquals("Solo letras", error)
-    }
-
-    // Tests para validatePassword
-    @Test
-    fun validatePassword_ok_password_valido() {
-        val error = validatePassword("Pass123!")
-        assertNull(error)
+    fun validateName_vacio_retorna_error() {
+        assertEquals("El nombre de usuario es obligatorio", validateName(""))
+        assertEquals("El nombre de usuario es obligatorio", validateName("   "))
     }
 
     @Test
-    fun validatePassword_error_password_vacio() {
-        val error = validatePassword("")
-        assertEquals("La contraseña es obligatoria", error)
+    fun validateName_muy_corto_retorna_error() {
+        assertEquals("El nombre de usuario debe tener al menos 3 caracteres", validateName("ab"))
+        assertEquals("El nombre de usuario debe tener al menos 3 caracteres", validateName("a"))
     }
 
     @Test
-    fun validatePassword_error_password_muy_corto() {
-        val error = validatePassword("Ab1!")
-        assertEquals("Mínimo 8 caracteres", error)
+    fun validateName_muy_largo_retorna_error() {
+        val longName = "a".repeat(31)
+        assertEquals("El nombre de usuario no puede superar los 30 caracteres", validateName(longName))
     }
 
     @Test
-    fun validatePassword_error_password_sin_mayuscula() {
-        val error = validatePassword("password123!")
-        assertEquals("Debe incluir una mayúscula", error)
+    fun validateName_con_espacios_retorna_error() {
+        assertEquals("El nombre de usuario no debe contener espacios", validateName("juan perez"))
+        assertEquals("El nombre de usuario no debe contener espacios", validateName(" juan"))
+        assertEquals("El nombre de usuario no debe contener espacios", validateName("juan "))
     }
 
     @Test
-    fun validatePassword_error_password_sin_minuscula() {
-        val error = validatePassword("PASSWORD123!")
-        assertEquals("Debe incluir una minúscula", error)
-    }
-
-    @Test
-    fun validatePassword_error_password_sin_numero() {
-        val error = validatePassword("Password!")
-        assertEquals("Debe incluir un número", error)
-    }
-
-    @Test
-    fun validatePassword_error_password_sin_simbolo() {
-        val error = validatePassword("Password123")
-        assertEquals("Debe incluir un símbolo", error)
-    }
-
-    @Test
-    fun validatePassword_error_password_con_espacios() {
-        val error = validatePassword("Pass 123!")
-        assertEquals("No debe contener espacios", error)
-    }
-
-    // Tests para validatePasswordConfirm
-    @Test
-    fun validatePasswordConfirm_ok_contraseñas_coinciden() {
-        val error = validatePasswordConfirm("Pass123!", "Pass123!")
-        assertNull(error)
-    }
-
-    @Test
-    fun validatePasswordConfirm_error_contraseñas_no_coinciden() {
-        val error = validatePasswordConfirm("Pass123!", "Different123!")
-        assertEquals("Las contraseñas no coinciden", error)
-    }
-
-    // Tests para validateRegisterFields
-    @Test
-    fun validateRegisterFields_ok_todos_campos_validos() {
-        val error = validateRegisterFields(
-            name = "Ana García",
-            email = "ana@ejemplo.com",
-            password = "Pass123!",
-            confirmPassword = "Pass123!"
+    fun validateName_caracteres_invalidos_retorna_error() {
+        assertEquals(
+            "El nombre de usuario solo puede contener letras, números, punto, guion y guion bajo",
+            validateName("juan@perez")
         )
-        assertNull(error)
-    }
-
-    @Test
-    fun validateRegisterFields_error_nombre_invalido() {
-        val error = validateRegisterFields(
-            name = "",
-            email = "ana@ejemplo.com",
-            password = "Pass123!",
-            confirmPassword = "Pass123!"
+        assertEquals(
+            "El nombre de usuario solo puede contener letras, números, punto, guion y guion bajo",
+            validateName("juan#perez")
         )
-        assertEquals("El nombre es obligatorio", error)
-    }
-
-    @Test
-    fun validateRegisterFields_error_email_invalido() {
-        val error = validateRegisterFields(
-            name = "Ana García",
-            email = "email-invalido",
-            password = "Pass123!",
-            confirmPassword = "Pass123!"
+        assertEquals(
+            "El nombre de usuario solo puede contener letras, números, punto, guion y guion bajo",
+            validateName("juan!perez")
         )
-        assertEquals("Formato de email inválido", error)
     }
 
     @Test
-    fun validateRegisterFields_error_password_invalida() {
-        val error = validateRegisterFields(
-            name = "Ana García",
-            email = "ana@ejemplo.com",
-            password = "corto",
-            confirmPassword = "corto"
-        )
-        assertEquals("Mínimo 8 caracteres", error)
+    fun validateName_comienza_con_caracter_invalido_retorna_error() {
+        assertEquals("El nombre de usuario es inválido", validateName(".juan"))
+        assertEquals("El nombre de usuario es inválido", validateName("_juan"))
+        assertEquals("El nombre de usuario es inválido", validateName("-juan"))
     }
 
     @Test
-    fun validateRegisterFields_error_confirmacion_no_coincide() {
-        val error = validateRegisterFields(
-            name = "Ana García",
-            email = "ana@ejemplo.com",
-            password = "Pass123!",
-            confirmPassword = "Different123!"
-        )
-        assertEquals("Las contraseñas no coinciden", error)
+    fun validateName_contiene_dobles_caracteres_retorna_error() {
+        assertEquals("El nombre de usuario es inválido", validateName("juan..perez"))
+        assertEquals("El nombre de usuario es inválido", validateName("juan__perez"))
+        assertEquals("El nombre de usuario es inválido", validateName("juan--perez"))
+    }
+
+    // ================================
+    // PRUEBAS PARA validatePassword
+    // ================================
+
+    @Test
+    fun validatePassword_valido_retorna_null() {
+        assertNull(validatePassword("Password123!"))
+        assertNull(validatePassword("MiClave123#"))
+        assertNull(validatePassword("Test@2024"))
     }
 
     @Test
-    fun validateRegisterFields_error_validacion_orden_correcto() {
-        val error = validateRegisterFields(
-            name = "",
+    fun validatePassword_vacio_retorna_error() {
+        assertEquals("La contraseña es obligatoria", validatePassword(""))
+        assertEquals("La contraseña es obligatoria", validatePassword("   "))
+    }
+
+    @Test
+    fun validatePassword_muy_corta_retorna_error() {
+        assertEquals("La contraseña debe tener mínimo 8 caracteres", validatePassword("Abc123!"))
+        assertEquals("La contraseña debe tener mínimo 8 caracteres", validatePassword("A1!"))
+    }
+
+    @Test
+    fun validatePassword_muy_larga_retorna_error() {
+        val longPassword = "A".repeat(70) + "a1!"
+        assertEquals("La contraseña no puede superar los 72 caracteres", validatePassword(longPassword))
+    }
+
+    @Test
+    fun validatePassword_con_espacios_retorna_error() {
+        assertEquals("La contraseña no debe contener espacios", validatePassword("Password 123!"))
+        assertEquals("La contraseña no debe contener espacios", validatePassword(" Password123!"))
+        assertEquals("La contraseña no debe contener espacios", validatePassword("Password123! "))
+    }
+
+    @Test
+    fun validatePassword_sin_mayuscula_retorna_error() {
+        assertEquals("La contraseña debe incluir una mayúscula", validatePassword("password123!"))
+    }
+
+    @Test
+    fun validatePassword_sin_minuscula_retorna_error() {
+        assertEquals("La contraseña debe incluir una minúscula", validatePassword("PASSWORD123!"))
+    }
+
+    @Test
+    fun validatePassword_sin_numero_retorna_error() {
+        assertEquals("La contraseña debe incluir un número", validatePassword("Password!!"))
+    }
+
+    @Test
+    fun validatePassword_sin_simbolo_retorna_error() {
+        assertEquals("La contraseña debe incluir un símbolo", validatePassword("Password123"))
+    }
+
+    // ================================
+    // PRUEBAS PARA validatePasswordConfirm
+    // ================================
+
+    @Test
+    fun validatePasswordConfirm_valido_retorna_null() {
+        assertNull(validatePasswordConfirm("Password123!", "Password123!"))
+    }
+
+    @Test
+    fun validatePasswordConfirm_vacio_retorna_error() {
+        assertEquals("Confirma tu contraseña", validatePasswordConfirm("Password123!", ""))
+        assertEquals("Confirma tu contraseña", validatePasswordConfirm("Password123!", "   "))
+    }
+
+    @Test
+    fun validatePasswordConfirm_no_coincide_retorna_error() {
+        assertEquals("Las contraseñas no coinciden", validatePasswordConfirm("Password123!", "Password123"))
+        assertEquals("Las contraseñas no coinciden", validatePasswordConfirm("Password123!", "password123!"))
+    }
+
+    // ================================
+    // PRUEBAS PARA validateRegisterFields
+    // ================================
+
+    @Test
+    fun validateRegisterFields_todo_valido_retorna_null() {
+        assertNull(validateRegisterFields(
+            username = "juan_perez",
+            email = "juan@example.com",
+            password = "Password123!",
+            confirmPassword = "Password123!"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_nombre_invalido_retorna_error_nombre() {
+        assertEquals("El nombre de usuario es obligatorio", validateRegisterFields(
+            username = "",
+            email = "juan@example.com",
+            password = "Password123!",
+            confirmPassword = "Password123!"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_email_invalido_retorna_error_email() {
+        assertEquals("Formato de email inválido", validateRegisterFields(
+            username = "juan_perez",
+            email = "juan@",
+            password = "Password123!",
+            confirmPassword = "Password123!"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_password_invalido_retorna_error_password() {
+        assertEquals("La contraseña debe incluir un símbolo", validateRegisterFields(
+            username = "juan_perez",
+            email = "juan@example.com",
+            password = "Password123",
+            confirmPassword = "Password123"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_confirmacion_invalida_retorna_error_confirmacion() {
+        assertEquals("Las contraseñas no coinciden", validateRegisterFields(
+            username = "juan_perez",
+            email = "juan@example.com",
+            password = "Password123!",
+            confirmPassword = "Password123"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_multiples_errores_retorna_primer_error() {
+        // Debería retornar el primer error encontrado (nombre)
+        assertEquals("El nombre de usuario es obligatorio", validateRegisterFields(
+            username = "",
             email = "invalido",
-            password = "corto",
-            confirmPassword = "different"
-        )
-        assertEquals("El nombre es obligatorio", error)
+            password = "corta",
+            confirmPassword = "diferente"
+        ))
+    }
+
+    @Test
+    fun validateRegisterFields_orden_validacion() {
+        // Primero valida nombre, luego email, luego password, luego confirmación
+        // Test con nombre válido pero email inválido
+        assertEquals("Formato de email inválido", validateRegisterFields(
+            username = "juan_perez", // válido
+            email = "invalido", // inválido
+            password = "Password123!", // válido
+            confirmPassword = "Password123!" // válido
+        ))
     }
 }
